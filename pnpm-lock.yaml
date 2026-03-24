@@ -46,19 +46,11 @@ importers:
         specifier: ^0.183.2
         version: 0.183.2
 
-  packages/core: {}
-
-  packages/export:
+  packages/configurator:
     dependencies:
-      '@dot-engine/core':
+      '@dot-engine/brand':
         specifier: workspace:*
-        version: link:../core
-      three:
-        specifier: ^0.175.0
-        version: 0.175.0
-
-  packages/playground:
-    dependencies:
+        version: link:../brand
       '@dot-engine/core':
         specifier: workspace:*
         version: link:../core
@@ -93,6 +85,17 @@ importers:
       vite:
         specifier: ^7.0.0
         version: 7.3.1
+
+  packages/core: {}
+
+  packages/export:
+    dependencies:
+      '@dot-engine/core':
+        specifier: workspace:*
+        version: link:../core
+      three:
+        specifier: ^0.175.0
+        version: 0.175.0
 
   packages/renderer:
     dependencies:

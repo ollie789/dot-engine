@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       '@dot-engine/core': path.resolve(__dirname, '../core/src/index.ts'),
       '@dot-engine/renderer': path.resolve(__dirname, '../renderer/src/index.ts'),
+      '@dot-engine/brand': path.resolve(__dirname, '../brand/src/index.ts'),
     },
   },
 });

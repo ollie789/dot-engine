@@ -1,5 +1,5 @@
 {
-  "name": "@dot-engine/playground",
+  "name": "@dot-engine/configurator",
   "private": true,
   "type": "module",
   "scripts": {
