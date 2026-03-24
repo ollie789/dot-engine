@@ -9,3 +9,5 @@ export { motionToDisplacements } from './brand/motion.js';
 export type { MotionStyle } from './brand/motion.js';
 export { buildContextField } from './brand/contexts.js';
 export { buildDataField } from './brand/data-field.js';
+export { BrandMoment } from './components/BrandMoment.js';
+export type { BrandMomentProps } from './components/BrandMoment.js';
