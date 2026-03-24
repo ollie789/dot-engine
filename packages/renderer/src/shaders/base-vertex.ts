@@ -40,7 +40,8 @@ void main() {
   float d = {{SDF_ROOT}}(displaced);
   float edgeSoftness = 0.05;
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
-  vec3 scaledPos = position * field * 0.02;
+  float dotScale = {{SIZE_EXPR}};
+  vec3 scaledPos = position * field * dotScale;
   vec3 worldPos = displaced + scaledPos;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
   vFieldValue = field;

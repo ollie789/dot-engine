@@ -326,6 +326,20 @@ body::after {
   cursor: pointer;
 }
 
+.color-hex-input {
+  width: 70px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glow);
+  border-radius: 3px;
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 4px;
+  text-align: center;
+  outline: none;
+  margin-top: 2px;
+}
+
 /* Sliders */
 .sliders-group {
   display: flex;

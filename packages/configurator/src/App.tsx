@@ -19,9 +19,11 @@ export function App() {
   const [activeContext, setActiveContext] = useState<BrandContext>('logo');
   const [pointerEnabled, setPointerEnabled] = useState(true);
   const [brand, setBrand] = useState<Brand | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
+      setIsLoading(true);
       try {
         const b = await defineBrand({
           name,
@@ -37,6 +39,8 @@ export function App() {
         setBrand(b);
       } catch (e) {
         console.error('Brand creation failed:', e);
+      } finally {
+        setIsLoading(false);
       }
     }, 300);
     return () => clearTimeout(timer);
@@ -78,6 +82,7 @@ export function App() {
         pointerEnabled={pointerEnabled}
         colorPrimary={colorPrimary}
         colorAccent={colorAccent}
+        isLoading={isLoading}
       />
 
       <BottomBar

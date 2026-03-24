@@ -22,9 +22,13 @@ export function buildContextField(
 export function buildLogoField(brand: Brand, params: MappedParams): FieldRoot {
   const res = params.gridResolution;
   const speed = brand.config.motion.speed * params.animateSpeed;
+  const aspect = brand.logo.aspectRatio;
+  const rx = Math.round(res * Math.max(1, aspect));
+  const ry = Math.round(res / Math.max(1, aspect));
+  const rz = Math.max(8, Math.round(res * 0.3));
   const children: FieldChildNode[] = [
     shape(brand.logo.sdfNode),
-    grid({ type: 'uniform', resolution: [res, res, res] }),
+    grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [2 * aspect, 2, 0.6] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount, params.useFlowField),
     animate({ speed }),

@@ -8,6 +8,7 @@ import type {
   NoiseColorNode,
   ColorFieldNode,
   OpacityNode,
+  SizeNode,
   SdfNode,
 } from '@dot-engine/core';
 import { collectSnippets } from './snippets.js';
@@ -198,6 +199,22 @@ function compileOpacityExpr(opacityNode: OpacityNode | undefined): string {
   }
 }
 
+function compileSizeExpr(sizeNode: SizeNode | undefined): string {
+  if (!sizeNode) return '0.02';
+  const min = f(sizeNode.min);
+  const max = f(sizeNode.max);
+  switch (sizeNode.mode) {
+    case 'depth':
+      return `mix(${min}, ${max}, field)`;
+    case 'uniform':
+      return max;
+    default: {
+      const _exhaustive: never = sizeNode.mode;
+      throw new Error(`Unknown size mode: ${_exhaustive}`);
+    }
+  }
+}
+
 function collectTextureUniforms(node: SdfNode, out: Record<string, ExtraUniform>): void {
   if (node.type === 'textureSdf') {
     const tid = node.textureId;
@@ -240,6 +257,10 @@ export function compileField(root: FieldRoot): CompiledField {
     (c): c is OpacityNode => c.type === 'opacity',
   ) as OpacityNode | undefined;
 
+  const sizeNode = root.children.find(
+    (c): c is SizeNode => c.type === 'size',
+  ) as SizeNode | undefined;
+
   // Collect texture uniforms from SDF tree
   const extraUniforms: Record<string, ExtraUniform> = {};
   collectTextureUniforms(shapeNode.sdf, extraUniforms);
@@ -276,13 +297,17 @@ export function compileField(root: FieldRoot): CompiledField {
   // Build displacement lines
   const displacementLines = displaceNodes.map(emitDisplacement).join('\n');
 
+  // Compile size expression
+  const sizeExpr = compileSizeExpr(sizeNode);
+
   // Assemble vertex shader by replacing template placeholders
   const vertexShader = BASE_VERTEX
     .replace('{{EXTRA_UNIFORMS}}', extraUniformsCode)
     .replace('{{NOISE_FUNCTIONS}}', noiseFunctions)
     .replace('{{SDF_FUNCTIONS}}', sdfFunctions)
     .replace('{{SDF_ROOT}}', rootFn)
-    .replace('{{DISPLACEMENT}}', displacementLines);
+    .replace('{{DISPLACEMENT}}', displacementLines)
+    .replace('{{SIZE_EXPR}}', sizeExpr);
 
   // Fragment shader: generate color/opacity logic
   const colorLogic = compileColorLogic(colorNode);

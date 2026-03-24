@@ -82,6 +82,7 @@ export interface Canvas3DProps {
   pointerEnabled: boolean;
   colorPrimary: string;
   colorAccent: string;
+  isLoading?: boolean;
 }
 
 export function Canvas3D({
@@ -90,6 +91,7 @@ export function Canvas3D({
   pointerEnabled,
   colorPrimary,
   colorAccent,
+  isLoading,
 }: Canvas3DProps) {
   return (
     <div className="canvas-wrapper">
@@ -111,6 +113,24 @@ export function Canvas3D({
           colorAccent={colorAccent}
         />
       </Canvas>
+
+      {isLoading && (
+        <div style={{
+          position: 'absolute',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: 'var(--accent-blue)',
+          fontSize: '10px',
+          fontFamily: 'var(--font-mono)',
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          opacity: 0.6,
+          zIndex: 20,
+        }}>
+          Processing...
+        </div>
+      )}
     </div>
   );
 }

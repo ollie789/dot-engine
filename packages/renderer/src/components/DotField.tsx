@@ -126,7 +126,8 @@ export function DotField({
       fragmentShader: compiled.fragmentShader,
       uniforms,
       transparent: true,
-      depthWrite: false,
+      depthWrite: true,
+      depthTest: true,
     });
   }, [compiled, colorPrimary, colorAccent, textures]);
 
