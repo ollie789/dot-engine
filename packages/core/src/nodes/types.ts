@@ -317,6 +317,19 @@ export interface ParticleNode extends BaseNode {
 }
 
 // ---------------------------------------------------------------------------
+// Image field node
+// ---------------------------------------------------------------------------
+
+export interface ImageFieldNode extends BaseNode {
+  readonly type: 'imageField';
+  readonly textureId: string;
+  readonly mode: 'brightness' | 'alpha';
+  readonly colorFromImage: boolean;
+  readonly threshold?: number;
+  readonly depth?: number;
+}
+
+// ---------------------------------------------------------------------------
 // Field root
 // ---------------------------------------------------------------------------
 
@@ -328,7 +341,8 @@ export type FieldChildNode =
   | ColorFieldNode
   | SizeNode
   | OpacityNode
-  | ParticleNode;
+  | ParticleNode
+  | ImageFieldNode;
 
 export interface FieldRoot extends BaseNode {
   readonly type: 'field';

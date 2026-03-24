@@ -49,10 +49,14 @@ export type {
   ColorFieldNode,
   SizeNode,
   OpacityNode,
+  ImageFieldNode,
   FieldChildNode,
   FieldRoot,
 } from './nodes/types.js';
 export { nodeId, _resetIds } from './nodes/types.js';
+
+// Image field builder
+export { imageField } from './nodes/image-field.js';
 
 // Field-level builders
 export { field } from './nodes/field.js';
