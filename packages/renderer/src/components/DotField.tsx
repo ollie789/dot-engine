@@ -10,6 +10,7 @@ export interface DotFieldProps {
   colorPrimary?: string;
   colorAccent?: string;
   lod?: 'auto' | LodOverride;
+  backend?: 'auto' | 'webgl2' | 'webgpu';
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -28,7 +29,20 @@ export function DotField({
   colorPrimary = '#4a9eff',
   colorAccent = '#ff6b4a',
   lod = 'auto',
+  backend = 'auto',
 }: DotFieldProps) {
+  // WebGPU detection and stub
+  const useWebGpu =
+    backend === 'webgpu' ||
+    (backend === 'auto' &&
+      typeof navigator !== 'undefined' &&
+      'gpu' in navigator);
+
+  if (useWebGpu) {
+    console.warn(
+      '[dot-engine] WebGPU backend: compute shader compiled but runtime not yet implemented. Falling back to WebGL2.',
+    );
+  }
   const meshRef = useRef<THREE.InstancedMesh>(null!);
   const { gl } = useThree();
   const compiled = useMemo(() => compileField(fieldDesc), [fieldDesc]);
