@@ -10,7 +10,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit"
@@ -23,5 +25,14 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.175.0"
+  },
+  "devDependencies": {
+    "@react-three/fiber": "^9.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "three": "^0.183.2"
   }
 }
