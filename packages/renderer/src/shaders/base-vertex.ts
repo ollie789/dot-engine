@@ -27,6 +27,14 @@ vec3 indexToGrid(int idx, vec3 res, vec3 bounds) {
 
 void main() {
   vec3 gridPos = indexToGrid(gl_InstanceID, uResolution, uBounds);
+  // Coarse SDF check before displacement (skip expensive noise for distant dots)
+  float dCoarse = {{SDF_ROOT}}(gridPos);
+  if (dCoarse > 0.5) {
+    gl_Position = vec4(0.0, 0.0, -999.0, 1.0);
+    vFieldValue = 0.0;
+    vDistance = dCoarse;
+    return;
+  }
   vec3 displaced = gridPos;
 {{DISPLACEMENT}}
   // Pointer influence (optional)

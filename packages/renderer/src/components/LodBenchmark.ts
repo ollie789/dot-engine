@@ -35,8 +35,8 @@ export function computeLodTier(
 
 function tierForQuality(quality: LodQuality, maxDots: number): LodTier {
   switch (quality) {
-    case 'high': return { quality, maxDots, dotComplexity: 8, includeFlowField: true };
-    case 'medium': return { quality, maxDots, dotComplexity: 2, includeFlowField: false };
+    case 'high': return { quality, maxDots: Math.min(maxDots, 300000), dotComplexity: 8, includeFlowField: true };
+    case 'medium': return { quality, maxDots: Math.min(maxDots, 100000), dotComplexity: 2, includeFlowField: false };
     case 'low': return { quality, maxDots, dotComplexity: 1, includeFlowField: false };
   }
 }
