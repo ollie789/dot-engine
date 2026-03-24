@@ -54,6 +54,9 @@ importers:
       '@dot-engine/core':
         specifier: workspace:*
         version: link:../core
+      '@dot-engine/export':
+        specifier: workspace:*
+        version: link:../export
       '@dot-engine/renderer':
         specifier: workspace:*
         version: link:../renderer
