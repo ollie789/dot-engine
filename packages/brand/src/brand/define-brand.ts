@@ -16,6 +16,12 @@ export async function defineBrand(config: BrandConfig): Promise<Brand> {
         const dataPoints = options?.data ?? [];
         return buildDataField(brand, params, dataPoints, options);
       }
+      if (context === 'transition') {
+        // Transition rendering is handled by BrandMoment.
+        // field('transition') returns the 'from' context field (or logo fallback).
+        const fromContext = options?.from ?? 'logo';
+        return buildContextField(brand, fromContext, params, options);
+      }
       return buildContextField(brand, context, params, options);
     },
   };
