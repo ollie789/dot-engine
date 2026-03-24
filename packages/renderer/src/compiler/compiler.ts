@@ -10,6 +10,7 @@ import type {
   OpacityNode,
   SizeNode,
   SdfNode,
+  ImageFieldNode,
 } from '@dot-engine/core';
 import { collectSnippets } from './snippets.js';
 import { SMIN_GLSL } from './smin.glsl.js';
@@ -215,6 +216,40 @@ function compileSizeExpr(sizeNode: SizeNode | undefined): string {
   }
 }
 
+function emitImageFieldVertex(node: ImageFieldNode): string {
+  const mode = node.mode === 'alpha' ? '1' : '0';
+  const threshold = f(node.threshold ?? 0.1);
+  return [
+    `  {`,
+    `    float ASPECT = uBounds.x / uBounds.y;`,
+    `    vec2 imgUv = vec2(displaced.x * ASPECT, -displaced.y) * 0.5 + 0.5;`,
+    `    vec4 imgSample = vec4(0.0);`,
+    `    float imgValue = 0.0;`,
+    `    if (imgUv.x >= 0.0 && imgUv.x <= 1.0 && imgUv.y >= 0.0 && imgUv.y <= 1.0) {`,
+    `      imgSample = texture2D(uImageField, imgUv);`,
+    `      imgValue = ${mode} == 0`,
+    `        ? dot(imgSample.rgb, vec3(0.299, 0.587, 0.114))`,
+    `        : imgSample.a;`,
+    `    }`,
+    `    if (imgValue < ${threshold}) {`,
+    `      gl_Position = vec4(0.0, 0.0, -999.0, 1.0);`,
+    `      vFieldValue = 0.0;`,
+    `      vImgUv = vec2(0.0);`,
+    `      return;`,
+    `    }`,
+    `    imgScale = imgValue;`,
+    `    vImgUv = imgUv;`,
+    `  }`,
+  ].join('\n');
+}
+
+function emitImageFieldColorLogic(): string {
+  return [
+    `  vec4 _imgColor = texture2D(uImageField, vImgUv);`,
+    `  vec3 color = _imgColor.rgb;`,
+  ].join('\n');
+}
+
 function collectTextureUniforms(node: SdfNode, out: Record<string, ExtraUniform>): void {
   if (node.type === 'textureSdf') {
     const tid = node.textureId;
@@ -261,9 +296,22 @@ export function compileField(root: FieldRoot): CompiledField {
     (c): c is SizeNode => c.type === 'size',
   ) as SizeNode | undefined;
 
+  // Find image field node
+  const imageFieldNode = root.children.find(
+    (c): c is ImageFieldNode => c.type === 'imageField',
+  ) as ImageFieldNode | undefined;
+
   // Collect texture uniforms from SDF tree
   const extraUniforms: Record<string, ExtraUniform> = {};
   collectTextureUniforms(shapeNode.sdf, extraUniforms);
+
+  // Add image field uniform if present
+  if (imageFieldNode) {
+    extraUniforms['__imageField__'] = {
+      type: 'sampler2D',
+      declaration: 'uniform sampler2D uImageField;',
+    };
+  }
 
   // Build extra uniform declarations string
   const extraUniformsCode = Object.values(extraUniforms)
@@ -300,6 +348,9 @@ export function compileField(root: FieldRoot): CompiledField {
   // Compile size expression
   const sizeExpr = compileSizeExpr(sizeNode);
 
+  // Emit image field GLSL code
+  const imageFieldCode = imageFieldNode ? emitImageFieldVertex(imageFieldNode) : '';
+
   // Assemble vertex shader by replacing template placeholders
   const vertexShader = BASE_VERTEX
     .replace('{{EXTRA_UNIFORMS}}', extraUniformsCode)
@@ -307,15 +358,29 @@ export function compileField(root: FieldRoot): CompiledField {
     .replace('{{SDF_FUNCTIONS}}', sdfFunctions)
     .replace('{{SDF_ROOT}}', rootFn)
     .replace('{{DISPLACEMENT}}', displacementLines)
+    .replace('{{IMAGE_FIELD}}', imageFieldCode)
     .replace('{{SIZE_EXPR}}', sizeExpr);
 
   // Fragment shader: generate color/opacity logic
-  const colorLogic = compileColorLogic(colorNode);
+  const colorLogic =
+    imageFieldNode?.colorFromImage
+      ? emitImageFieldColorLogic()
+      : compileColorLogic(colorNode);
   const opacityExpr = compileOpacityExpr(opacityNode);
 
   // Include simplex noise in fragment shader if noiseColor is used
   const needsFragSimplex = colorNode?.type === 'noiseColor';
-  const fragmentFunctions = needsFragSimplex ? SIMPLEX3D_GLSL : '';
+  // Include image field sampler in fragment functions when colorFromImage is active
+  const imageFragDecl =
+    imageFieldNode?.colorFromImage
+      ? 'uniform sampler2D uImageField;'
+      : '';
+  const fragmentFunctions = [
+    needsFragSimplex ? SIMPLEX3D_GLSL : '',
+    imageFragDecl,
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   const fragmentShader = BASE_FRAGMENT
     .replace('{{FRAGMENT_FUNCTIONS}}', fragmentFunctions)

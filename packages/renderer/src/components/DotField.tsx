@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { FieldRoot, AnimateNode, DisplaceNode } from '@dot-engine/core';
+import type { FieldRoot, AnimateNode, DisplaceNode, ImageFieldNode } from '@dot-engine/core';
 import { compileField } from '../compiler/compiler.js';
 import { computeLodTier, type LodOverride, type LodTier } from './LodBenchmark.js';
 
@@ -17,6 +17,8 @@ export interface DotFieldProps {
   pointerStrength?: number;
   /** Texture uniforms for TextureSdf nodes, keyed by textureId. */
   textures?: Record<string, { texture: THREE.DataTexture; depth: number; aspectRatio: number }>;
+  /** Image field texture (for ImageFieldNode). Keyed by textureId, value is DataTexture or VideoTexture. */
+  imageTextures?: Record<string, THREE.Texture>;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -39,6 +41,7 @@ export function DotField({
   pointerPosition,
   pointerStrength,
   textures,
+  imageTextures,
 }: DotFieldProps) {
   // WebGPU detection and stub
   const useWebGpu =
@@ -99,6 +102,15 @@ export function DotField({
     [compiled.totalDots, lodTier.maxDots],
   );
 
+  // Find the ImageFieldNode (if any) in the field children
+  const imageFieldNode = useMemo(
+    () =>
+      fieldDesc.children.find(
+        (c): c is ImageFieldNode => c.type === 'imageField',
+      ) as ImageFieldNode | undefined,
+    [fieldDesc],
+  );
+
   const material = useMemo(() => {
     const uniforms: Record<string, { value: unknown }> = {
       uTime: { value: 0 },
@@ -112,12 +124,21 @@ export function DotField({
 
     if (textures && compiled.extraUniforms) {
       for (const [tid] of Object.entries(compiled.extraUniforms)) {
+        if (tid === '__imageField__') continue;
         const tex = textures[tid];
         if (tex) {
           uniforms[`uLogoSDF_${tid}`] = { value: tex.texture };
           uniforms[`uLogoDepth_${tid}`] = { value: tex.depth };
           uniforms[`uLogoAspect_${tid}`] = { value: tex.aspectRatio };
         }
+      }
+    }
+
+    // Bind image field texture if present
+    if (imageFieldNode && imageTextures) {
+      const imgTex = imageTextures[imageFieldNode.textureId];
+      if (imgTex) {
+        uniforms['uImageField'] = { value: imgTex };
       }
     }
 
@@ -129,7 +150,7 @@ export function DotField({
       depthWrite: true,
       depthTest: true,
     });
-  }, [compiled, colorPrimary, colorAccent, textures]);
+  }, [compiled, colorPrimary, colorAccent, textures, imageFieldNode, imageTextures]);
 
   const geometry = useMemo(
     () => geometryForComplexity(lodTier.dotComplexity),

@@ -2,6 +2,7 @@ export const BASE_FRAGMENT = `
 varying float vFieldValue;
 varying float vDistance;
 varying vec3 vPosition;
+varying vec2 vImgUv;
 
 uniform vec3 uColorPrimary;
 uniform vec3 uColorAccent;

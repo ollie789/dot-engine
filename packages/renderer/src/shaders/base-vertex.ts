@@ -2,6 +2,7 @@ export const BASE_VERTEX = `
 varying float vFieldValue;
 varying float vDistance;
 varying vec3 vPosition;
+varying vec2 vImgUv;
 
 uniform float uTime;
 uniform vec3 uResolution;
@@ -37,10 +38,14 @@ void main() {
       displaced += normalize(toPointer) * uPointerStrength * 0.1 / max(dist * dist, 0.1);
     }
   }
+  // Image field (optional)
+  float imgScale = 1.0;
+  vImgUv = vec2(0.0);
+{{IMAGE_FIELD}}
   float d = {{SDF_ROOT}}(displaced);
   float edgeSoftness = 0.05;
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
-  float dotScale = {{SIZE_EXPR}};
+  float dotScale = {{SIZE_EXPR}} * imgScale;
   vec3 scaledPos = position * field * dotScale;
   vec3 worldPos = displaced + scaledPos;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
