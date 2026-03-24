@@ -6,3 +6,11 @@ export { computeLodTier, type LodTier, type LodOverride, type LodQuality } from 
 export { usePointerInfluence, type PointerInfluenceOptions, type PointerInfluence } from './hooks/usePointerInfluence.js';
 export { useScrollInfluence, type ScrollInfluenceOptions, type ScrollInfluence } from './hooks/useScrollInfluence.js';
 export { useSpring3D, type Spring3DOptions, type Spring3D } from './hooks/useSpring3D.js';
+export { ParticleSystem, type ParticleSystemProps } from './particles/ParticleSystem.js';
+export {
+  createParticlePool,
+  updateParticlePool,
+  getParticleAlpha,
+  PARTICLE_STRIDE,
+  type ParticlePoolState,
+} from './particles/particlePool.js';
