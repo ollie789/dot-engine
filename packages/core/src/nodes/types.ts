@@ -51,6 +51,14 @@ export interface PlaneNode extends BaseNode {
   readonly offset: number;
 }
 
+/**
+ * Custom SDF node — injects raw GLSL/WGSL into the compiled shader.
+ *
+ * WARNING: The `glsl` string is injected directly into the shader without
+ * sanitization. Do NOT use with untrusted input. If loading field descriptions
+ * from external sources (user uploads, URLs, APIs), strip or reject CustomSdfNode
+ * entries before compilation.
+ */
 export interface CustomSdfNode extends BaseNode {
   readonly type: 'customSdf';
   readonly glsl: string;
@@ -279,7 +287,7 @@ export type FieldChildNode =
   | SizeNode
   | OpacityNode;
 
-export interface FieldRoot {
+export interface FieldRoot extends BaseNode {
   readonly type: 'field';
   readonly children: readonly FieldChildNode[];
 }

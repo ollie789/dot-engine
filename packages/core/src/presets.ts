@@ -7,7 +7,7 @@ import { displace, simplex3D, flowField3D } from './nodes/displace.js';
 import { sphere, box, torus } from './sdf/primitives.js';
 import { smoothUnion } from './sdf/boolean.js';
 import { translate } from './sdf/transforms.js';
-import type { FieldRoot, SdfNode, NoiseConfig, ColorMode } from './nodes/types.js';
+import type { FieldRoot, FieldChildNode, SdfNode, NoiseConfig, ColorMode } from './nodes/types.js';
 
 export interface PresetConfig {
   shape: SdfNode;
@@ -18,7 +18,7 @@ export interface PresetConfig {
 }
 
 export function definePreset(config: PresetConfig): FieldRoot {
-  const children: any[] = [
+  const children: FieldChildNode[] = [
     shape(config.shape),
     grid(config.grid ?? { type: 'uniform', resolution: [30, 30, 30] }),
   ];

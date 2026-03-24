@@ -15,6 +15,7 @@ export function union(a: SdfNode, b: SdfNode): UnionNode {
 }
 
 export function smoothUnion(a: SdfNode, b: SdfNode, k: number): SmoothUnionNode {
+  if (k <= 0) throw new Error('smoothUnion: k must be > 0 (got ' + k + ')');
   return { id: nodeId(), type: 'smoothUnion', a, b, k };
 }
 
@@ -23,6 +24,7 @@ export function subtract(a: SdfNode, b: SdfNode): SubtractNode {
 }
 
 export function smoothSubtract(a: SdfNode, b: SdfNode, k: number): SmoothSubtractNode {
+  if (k <= 0) throw new Error('smoothSubtract: k must be > 0 (got ' + k + ')');
   return { id: nodeId(), type: 'smoothSubtract', a, b, k };
 }
 
@@ -31,6 +33,7 @@ export function intersect(a: SdfNode, b: SdfNode): IntersectNode {
 }
 
 export function smoothIntersect(a: SdfNode, b: SdfNode, k: number): SmoothIntersectNode {
+  if (k <= 0) throw new Error('smoothIntersect: k must be > 0 (got ' + k + ')');
   return { id: nodeId(), type: 'smoothIntersect', a, b, k };
 }
 

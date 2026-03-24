@@ -117,3 +117,29 @@ describe('onion()', () => {
     expect(n.thickness).toBe(0.1);
   });
 });
+
+describe('k=0 validation', () => {
+  it('smoothUnion throws when k=0', () => {
+    expect(() => smoothUnion(sphere(1), box([1, 1, 1]), 0)).toThrow('smoothUnion: k must be > 0');
+  });
+
+  it('smoothUnion throws when k<0', () => {
+    expect(() => smoothUnion(sphere(1), box([1, 1, 1]), -0.1)).toThrow('smoothUnion: k must be > 0');
+  });
+
+  it('smoothSubtract throws when k=0', () => {
+    expect(() => smoothSubtract(sphere(1), box([0.5, 0.5, 0.5]), 0)).toThrow('smoothSubtract: k must be > 0');
+  });
+
+  it('smoothSubtract throws when k<0', () => {
+    expect(() => smoothSubtract(sphere(1), box([0.5, 0.5, 0.5]), -1)).toThrow('smoothSubtract: k must be > 0');
+  });
+
+  it('smoothIntersect throws when k=0', () => {
+    expect(() => smoothIntersect(sphere(1), box([1, 1, 1]), 0)).toThrow('smoothIntersect: k must be > 0');
+  });
+
+  it('smoothIntersect throws when k<0', () => {
+    expect(() => smoothIntersect(sphere(1), box([1, 1, 1]), -0.5)).toThrow('smoothIntersect: k must be > 0');
+  });
+});

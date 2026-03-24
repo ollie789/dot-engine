@@ -93,14 +93,31 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
     }
 
     case 'cone': {
+      // Matches the GLSL snippet exactly (IQ formula).
+      // Cone centered at origin: tip at +halfH, base at -halfH.
       const halfH = node.height / 2;
       const hyp = Math.sqrt(node.radius * node.radius + node.height * node.height);
       const sinA = node.radius / hyp;
       const cosA = node.height / hyp;
-      // Shift so tip is at top: py = p.y - halfH
-      const py = p[1] - halfH;
-      const q = len2(p[0], p[2]);
-      return Math.max(sinA * q + cosA * (-py), -py - node.height);
+      // Shift so base is at w.y = 0 and tip is at w.y = height
+      const wx = len2(p[0], p[2]);
+      const wy = p[1] + halfH;
+      // dot(w, cq) = wx*sinA + wy*cosA
+      const dotWQ = wx * sinA + wy * cosA;
+      // dot(w, vec2(cq.y, -cq.x)) = wx*cosA - wy*sinA
+      const dotWQN = wx * cosA - wy * sinA;
+      const clampedDotWQ = Math.max(0, Math.min(node.height, dotWQ));
+      const d1 = Math.sqrt(
+        (wx - sinA * clampedDotWQ) ** 2 + (wy - cosA * clampedDotWQ) ** 2,
+      );
+      const clampedWxFrac = Math.max(0, Math.min(1, wx / node.radius));
+      const d2 = Math.sqrt(
+        (wx - node.radius * clampedWxFrac) ** 2 + wy * wy,
+      );
+      const insideCone =
+        dotWQN > 0 || wy > node.height || (dotWQ > node.height && wx < node.radius);
+      const s = insideCone ? 1 : -1;
+      return s * Math.min(d1, d2);
     }
 
     case 'plane': {
@@ -123,7 +140,10 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
     }
 
     case 'smoothUnion': {
-      return smin(evaluateSdf(node.a, p), evaluateSdf(node.b, p), node.k);
+      const a = evaluateSdf(node.a, p);
+      const b = evaluateSdf(node.b, p);
+      if (node.k <= 0) return Math.min(a, b); // fallback: avoid division by zero
+      return smin(a, b, node.k);
     }
 
     case 'subtract': {
