@@ -18,9 +18,9 @@ function hexToVec3(hex: string): THREE.Vector3 {
 }
 
 function geometryForComplexity(dotComplexity: number): THREE.BufferGeometry {
-  if (dotComplexity >= 8) return new THREE.OctahedronGeometry(1, 1);
-  if (dotComplexity >= 2) return new THREE.PlaneGeometry(2, 2);
-  return new THREE.OctahedronGeometry(1, 0);
+  if (dotComplexity >= 8) return new THREE.IcosahedronGeometry(1, 2); // 80 tris — smooth sphere
+  if (dotComplexity >= 2) return new THREE.IcosahedronGeometry(1, 1); // 20 tris — decent sphere
+  return new THREE.IcosahedronGeometry(1, 0);                         // 8 tris — minimal sphere
 }
 
 export function DotField({
