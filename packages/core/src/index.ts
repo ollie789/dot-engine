@@ -42,3 +42,10 @@ export type { AnimateOptions } from './nodes/animate.js';
 
 // SDF builders
 export * from './sdf/index.js';
+
+// CPU evaluator
+export { evaluateSdf } from './evaluate.js';
+
+// JSON serialization
+export type { Serializable } from './serialize.js';
+export { toJSON, fromJSON } from './serialize.js';
