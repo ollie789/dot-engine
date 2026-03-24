@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData } from '@dot-engine/brand';
-import type { MotionStyle, ParticleMode } from '@dot-engine/brand';
 import { TopBar } from './components/TopBar';
 import { Canvas3D, computeCanvasRect } from './components/Canvas3D';
 import { BottomBar } from './components/BottomBar';
 import { LeftPanel } from './components/LeftPanel';
 import { OUTPUT_FORMATS, type OutputFormat } from './formats';
+import { VIBES, applyIntensity, type Vibe, type VibeSettings } from './vibes';
 
 export function App() {
   const [name, setName] = useState('DOT ENGINE');
@@ -14,15 +14,8 @@ export function App() {
   const [colorPrimary, setColorPrimary] = useState('#4a9eff');
   const [colorAccent, setColorAccent] = useState('#ff6b4a');
   const [colorBackground, setColorBackground] = useState('#06060a');
-  const [energy, setEnergy] = useState(0.6);
-  const [organic, setOrganic] = useState(0.7);
-  const [density, setDensity] = useState(0.5);
-  const [motionStyle, setMotionStyle] = useState<MotionStyle>('flow');
-  const [motionSpeed, setMotionSpeed] = useState(0.4);
-  const [displacementAmount, setDisplacementAmount] = useState(0.08);
   const [activeContext, setActiveContext] = useState<BrandContext>('logo');
   const [pointerEnabled, setPointerEnabled] = useState(true);
-  const [particleMode, setParticleMode] = useState<ParticleMode>('none');
   const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageData, setImageData] = useState<ImageFieldData | null>(null);
@@ -30,16 +23,34 @@ export function App() {
   const [colorFromImage, setColorFromImage] = useState(true);
   const [activeFormat, setActiveFormat] = useState<OutputFormat>(OUTPUT_FORMATS[0]);
 
-  // Shape transforms
-  const [twist, setTwist] = useState(0);
-  const [bend, setBend] = useState(0);
-  const [mirrorX, setMirrorX] = useState(false);
-  const [mirrorY, setMirrorY] = useState(false);
+  // Vibe system
+  const [activeVibe, setActiveVibe] = useState<Vibe>(VIBES.find(v => v.name === 'organic')!);
+  const [intensity, setIntensity] = useState(0.5);
 
-  // Dot settings
-  const [dotSizeMin, setDotSizeMin] = useState(0.002);
-  const [dotSizeMax, setDotSizeMax] = useState(0.02);
-  const [edgeSoftness, setEdgeSoftness] = useState(0.05);
+  // Computed settings from vibe + intensity
+  const computedSettings = useMemo(() => applyIntensity(activeVibe, intensity), [activeVibe, intensity]);
+
+  // Advanced settings — start from computed, user can override
+  const [advancedSettings, setAdvancedSettings] = useState<VibeSettings>(computedSettings);
+
+  // Sync advanced settings when vibe or intensity changes (unless user has manually overridden)
+  // We reset advanced settings whenever the vibe changes or intensity changes
+  const prevVibeRef = useRef(activeVibe.name);
+  const prevIntensityRef = useRef(intensity);
+  useEffect(() => {
+    if (prevVibeRef.current !== activeVibe.name || prevIntensityRef.current !== intensity) {
+      setAdvancedSettings(computedSettings);
+      prevVibeRef.current = activeVibe.name;
+      prevIntensityRef.current = intensity;
+    }
+  }, [activeVibe, intensity, computedSettings]);
+
+  // When vibe changes, apply its suggested colors
+  function handleVibeChange(vibe: Vibe) {
+    setActiveVibe(vibe);
+    setColorPrimary(vibe.suggestedPrimary);
+    setColorAccent(vibe.suggestedAccent);
+  }
 
   // Track canvas container size for dimension display in TopBar
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -69,8 +80,15 @@ export function App() {
             accent: colorAccent,
             background: colorBackground,
           },
-          personality: { energy, organic, density },
-          motion: { speed: motionSpeed, style: motionStyle },
+          personality: {
+            energy: advancedSettings.energy,
+            organic: advancedSettings.organic,
+            density: advancedSettings.density,
+          },
+          motion: {
+            speed: advancedSettings.motionSpeed,
+            style: advancedSettings.motionStyle,
+          },
         });
         setBrand(b);
       } catch (e) {
@@ -80,25 +98,40 @@ export function App() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [name, logoFont, colorPrimary, colorAccent, colorBackground, energy, organic, density, motionStyle, motionSpeed]);
+  }, [
+    name,
+    logoFont,
+    colorPrimary,
+    colorAccent,
+    colorBackground,
+    advancedSettings.energy,
+    advancedSettings.organic,
+    advancedSettings.density,
+    advancedSettings.motionStyle,
+    advancedSettings.motionSpeed,
+  ]);
 
   // Context options include shape transforms and dot sizes
   const contextOptions = useMemo(() => ({
-    twist: twist || undefined,
-    bend: bend || undefined,
-    mirrorX: mirrorX || undefined,
-    mirrorY: mirrorY || undefined,
-    dotSizeMin,
-    dotSizeMax,
-    edgeSoftness,
-  }), [twist, bend, mirrorX, mirrorY, dotSizeMin, dotSizeMax, edgeSoftness]);
+    twist: advancedSettings.twist || undefined,
+    bend: advancedSettings.bend || undefined,
+    mirrorX: advancedSettings.mirrorX || undefined,
+    mirrorY: advancedSettings.mirrorY || undefined,
+    dotSizeMin: advancedSettings.dotSizeMin,
+    dotSizeMax: advancedSettings.dotSizeMax,
+    edgeSoftness: advancedSettings.edgeSoftness,
+  }), [advancedSettings]);
 
   const config = {
     name,
     logoFont,
     colors: { primary: colorPrimary, accent: colorAccent, background: colorBackground },
-    personality: { energy, organic, density },
-    motion: { speed: motionSpeed, style: motionStyle },
+    personality: {
+      energy: advancedSettings.energy,
+      organic: advancedSettings.organic,
+      density: advancedSettings.density,
+    },
+    motion: { speed: advancedSettings.motionSpeed, style: advancedSettings.motionStyle },
   };
 
   return (
@@ -126,6 +159,8 @@ export function App() {
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <LeftPanel
+          name={name}
+          setName={setName}
           logoMode={logoMode}
           setLogoMode={setLogoMode}
           logoFont={logoFont}
@@ -137,34 +172,12 @@ export function App() {
           colorBackground={colorBackground}
           setColorBackground={setColorBackground}
           onImageLoad={setImageData}
-          energy={energy}
-          setEnergy={setEnergy}
-          organic={organic}
-          setOrganic={setOrganic}
-          density={density}
-          setDensity={setDensity}
-          motionStyle={motionStyle}
-          setMotionStyle={setMotionStyle}
-          motionSpeed={motionSpeed}
-          setMotionSpeed={setMotionSpeed}
-          displacementAmount={displacementAmount}
-          setDisplacementAmount={setDisplacementAmount}
-          twist={twist}
-          setTwist={setTwist}
-          bend={bend}
-          setBend={setBend}
-          mirrorX={mirrorX}
-          setMirrorX={setMirrorX}
-          mirrorY={mirrorY}
-          setMirrorY={setMirrorY}
-          dotSizeMin={dotSizeMin}
-          setDotSizeMin={setDotSizeMin}
-          dotSizeMax={dotSizeMax}
-          setDotSizeMax={setDotSizeMax}
-          edgeSoftness={edgeSoftness}
-          setEdgeSoftness={setEdgeSoftness}
-          particleMode={particleMode}
-          setParticleMode={setParticleMode}
+          activeVibe={activeVibe}
+          setActiveVibe={handleVibeChange}
+          intensity={intensity}
+          setIntensity={setIntensity}
+          advancedSettings={advancedSettings}
+          setAdvancedSettings={setAdvancedSettings}
           hasImage={imageData !== null}
           imageResolution={imageResolution}
           setImageResolution={setImageResolution}
@@ -181,7 +194,7 @@ export function App() {
             colorPrimary={colorPrimary}
             colorAccent={colorAccent}
             isLoading={isLoading}
-            particleMode={particleMode}
+            particleMode={advancedSettings.particleMode}
             imageData={imageData}
             format={activeFormat}
             contextOptions={contextOptions}

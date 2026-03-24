@@ -745,6 +745,97 @@ body::after {
   border-right: 1px solid var(--accent-blue);
 }
 
+/* ===== Vibe cards ===== */
+.vibe-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.vibe-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  font-family: var(--font-mono);
+}
+
+.vibe-card:hover {
+  border-color: rgba(74, 158, 255, 0.2);
+  background: rgba(74, 158, 255, 0.03);
+}
+
+.vibe-card.active {
+  border-color: var(--accent-blue);
+  background: rgba(74, 158, 255, 0.08);
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.15);
+}
+
+.vibe-icon {
+  font-size: 16px;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.vibe-name {
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+
+.vibe-card.active .vibe-name {
+  color: var(--accent-blue);
+}
+
+/* ===== Intensity slider ===== */
+.intensity-slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.intensity-track {
+  height: 6px !important;
+}
+
+.intensity-track .slider-input {
+  height: 24px;
+}
+
+/* ===== Advanced toggle ===== */
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  font-family: var(--font-mono);
+  width: 100%;
+}
+
+.advanced-toggle:hover {
+  color: rgba(255,255,255,0.4);
+}
+
+.advanced-content {
+  padding-top: 8px;
+}
+
 /* ===== Crosshair ===== */
 .hud-crosshair {
   position: absolute;

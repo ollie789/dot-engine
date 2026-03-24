@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { ColorSwatch } from './ColorSwatch';
 import { Slider } from './Slider';
 import { loadImageForField } from '@dot-engine/brand';
 import type { MotionStyle, ImageFieldData } from '@dot-engine/brand';
 import type { ParticleMode } from '@dot-engine/brand';
+import { VIBES, type Vibe, type VibeSettings } from '../vibes';
 
 const FONTS = [
   { value: 'system-ui', label: 'system-ui' },
@@ -18,7 +19,9 @@ const MOTION_STYLES: MotionStyle[] = ['flow', 'breathe', 'pulse', 'none'];
 const PARTICLE_MODES: ParticleMode[] = ['none', 'ambient', 'burst', 'rising', 'edges'];
 
 export interface LeftPanelProps {
-  // Brand identity
+  // Brand
+  name: string;
+  setName: (n: string) => void;
   logoMode: 'text' | 'file' | 'image';
   setLogoMode: (m: 'text' | 'file' | 'image') => void;
   logoFont: string;
@@ -31,43 +34,15 @@ export interface LeftPanelProps {
   setColorBackground: (c: string) => void;
   onImageLoad: (data: ImageFieldData) => void;
 
-  // Personality
-  energy: number;
-  setEnergy: (v: number) => void;
-  organic: number;
-  setOrganic: (v: number) => void;
-  density: number;
-  setDensity: (v: number) => void;
+  // Vibe system
+  activeVibe: Vibe;
+  setActiveVibe: (v: Vibe) => void;
+  intensity: number;
+  setIntensity: (v: number) => void;
 
-  // Motion
-  motionStyle: MotionStyle;
-  setMotionStyle: (s: MotionStyle) => void;
-  motionSpeed: number;
-  setMotionSpeed: (v: number) => void;
-  displacementAmount: number;
-  setDisplacementAmount: (v: number) => void;
-
-  // Shape transforms
-  twist: number;
-  setTwist: (v: number) => void;
-  bend: number;
-  setBend: (v: number) => void;
-  mirrorX: boolean;
-  setMirrorX: (v: boolean) => void;
-  mirrorY: boolean;
-  setMirrorY: (v: boolean) => void;
-
-  // Dots
-  dotSizeMin: number;
-  setDotSizeMin: (v: number) => void;
-  dotSizeMax: number;
-  setDotSizeMax: (v: number) => void;
-  edgeSoftness: number;
-  setEdgeSoftness: (v: number) => void;
-
-  // Particles
-  particleMode: ParticleMode;
-  setParticleMode: (m: ParticleMode) => void;
+  // Advanced (derived from vibe + intensity, but overridable)
+  advancedSettings: VibeSettings;
+  setAdvancedSettings: (s: VibeSettings) => void;
 
   // Image
   hasImage: boolean;
@@ -78,6 +53,8 @@ export interface LeftPanelProps {
 }
 
 export function LeftPanel({
+  name,
+  setName,
   logoMode,
   setLogoMode,
   logoFont,
@@ -89,34 +66,12 @@ export function LeftPanel({
   colorBackground,
   setColorBackground,
   onImageLoad,
-  energy,
-  setEnergy,
-  organic,
-  setOrganic,
-  density,
-  setDensity,
-  motionStyle,
-  setMotionStyle,
-  motionSpeed,
-  setMotionSpeed,
-  displacementAmount,
-  setDisplacementAmount,
-  twist,
-  setTwist,
-  bend,
-  setBend,
-  mirrorX,
-  setMirrorX,
-  mirrorY,
-  setMirrorY,
-  dotSizeMin,
-  setDotSizeMin,
-  dotSizeMax,
-  setDotSizeMax,
-  edgeSoftness,
-  setEdgeSoftness,
-  particleMode,
-  setParticleMode,
+  activeVibe,
+  setActiveVibe,
+  intensity,
+  setIntensity,
+  advancedSettings,
+  setAdvancedSettings,
   hasImage,
   imageResolution,
   setImageResolution,
@@ -125,6 +80,7 @@ export function LeftPanel({
 }: LeftPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -146,7 +102,19 @@ export function LeftPanel({
     <div className="left-panel">
       {/* Brand Identity */}
       <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-blue)' }}>Identity</div>
+        <div className="section-title" style={{ color: 'var(--accent-blue)' }}>Brand</div>
+
+        {/* Brand name input */}
+        <div className="input-row" style={{ marginBottom: 8 }}>
+          <span className="panel-label">Name</span>
+          <input
+            className="brand-name-input"
+            style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'none', padding: '2px 6px' }}
+            value={name}
+            onChange={e => setName(e.target.value)}
+            aria-label="Brand name"
+          />
+        </div>
 
         {/* Logo mode pills */}
         <div className="input-row" style={{ marginBottom: 8 }}>
@@ -213,84 +181,191 @@ export function LeftPanel({
         </div>
       </div>
 
-      {/* Personality */}
+      {/* Vibe Picker */}
       <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-orange)' }}>Personality</div>
-        <Slider label="Energy" value={energy} onChange={setEnergy} accent="var(--accent-orange)" />
-        <Slider label="Organic" value={organic} onChange={setOrganic} accent="var(--accent-green)" />
-        <Slider label="Density" value={density} onChange={setDensity} accent="var(--accent-blue)" />
-      </div>
-
-      {/* Motion */}
-      <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-green)' }}>Motion</div>
-        <div className="input-row" style={{ marginBottom: 8 }}>
-          <span className="panel-label">Style</span>
-          <div className="mini-pills">
-            {MOTION_STYLES.map(s => (
-              <button
-                key={s}
-                className={`mini-pill${motionStyle === s ? ' active' : ''}`}
-                onClick={() => setMotionStyle(s)}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-        <Slider label="Speed" value={motionSpeed} onChange={setMotionSpeed} accent="var(--accent-green)" min={0} max={1} />
-        <Slider label="Displacement" value={displacementAmount} onChange={setDisplacementAmount} accent="var(--accent-green)" min={0} max={0.3} />
-      </div>
-
-      {/* Shape Transforms */}
-      <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-blue)' }}>Transforms</div>
-        <Slider label="Twist" value={twist} onChange={setTwist} accent="var(--accent-blue)" min={0} max={3} />
-        <Slider label="Bend" value={bend} onChange={setBend} accent="var(--accent-blue)" min={0} max={3} />
-        <div className="toggle-row">
-          <span className="panel-label">Mirror X</span>
-          <button
-            className={`panel-toggle${mirrorX ? ' active' : ''}`}
-            onClick={() => setMirrorX(!mirrorX)}
-            aria-label="Mirror X toggle"
-          >
-            {mirrorX ? 'ON' : 'OFF'}
-          </button>
-        </div>
-        <div className="toggle-row">
-          <span className="panel-label">Mirror Y</span>
-          <button
-            className={`panel-toggle${mirrorY ? ' active' : ''}`}
-            onClick={() => setMirrorY(!mirrorY)}
-            aria-label="Mirror Y toggle"
-          >
-            {mirrorY ? 'ON' : 'OFF'}
-          </button>
-        </div>
-      </div>
-
-      {/* Dots */}
-      <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-orange)' }}>Dots</div>
-        <Slider label="Size min" value={dotSizeMin} onChange={setDotSizeMin} accent="var(--accent-orange)" min={0.001} max={0.01} />
-        <Slider label="Size max" value={dotSizeMax} onChange={setDotSizeMax} accent="var(--accent-orange)" min={0.005} max={0.05} />
-        <Slider label="Edge softness" value={edgeSoftness} onChange={setEdgeSoftness} accent="var(--accent-orange)" min={0.01} max={0.2} />
-      </div>
-
-      {/* Particles */}
-      <div className="panel-section">
-        <div className="section-title" style={{ color: 'var(--accent-green)' }}>Particles</div>
-        <div className="mini-pills" style={{ flexWrap: 'wrap', gap: 3 }}>
-          {PARTICLE_MODES.map(m => (
+        <div className="section-title" style={{ color: 'var(--accent-orange)' }}>Vibe</div>
+        <div className="vibe-grid">
+          {VIBES.map(vibe => (
             <button
-              key={m}
-              className={`mini-pill${particleMode === m ? ' active' : ''}`}
-              onClick={() => setParticleMode(m)}
+              key={vibe.name}
+              className={`vibe-card${activeVibe.name === vibe.name ? ' active' : ''}`}
+              onClick={() => setActiveVibe(vibe)}
+              title={vibe.description}
             >
-              {m}
+              <span className="vibe-icon">{vibe.icon}</span>
+              <span className="vibe-name">{vibe.label}</span>
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Intensity Slider */}
+      <div className="panel-section">
+        <div className="section-title" style={{ color: 'var(--text-muted)' }}>Intensity</div>
+        <div className="intensity-slider-wrapper">
+          <div className="slider-header">
+            <span className="slider-label">Intensity</span>
+            <span className="slider-value">{intensity.toFixed(2)}</span>
+          </div>
+          <div className="slider-track-wrapper intensity-track">
+            <div
+              className="slider-fill"
+              style={{
+                width: `${intensity * 100}%`,
+                background: 'linear-gradient(90deg, rgba(74,158,255,0.5), var(--accent-blue))',
+              }}
+            />
+            <input
+              type="range"
+              className="slider-input"
+              min={0}
+              max={1}
+              step={0.01}
+              value={intensity}
+              onChange={e => setIntensity(parseFloat(e.target.value))}
+              style={{ cursor: 'pointer' }}
+              aria-label="Intensity"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Advanced (collapsible) */}
+      <div className="panel-section">
+        <button
+          className="advanced-toggle"
+          onClick={() => setAdvancedOpen(o => !o)}
+          aria-expanded={advancedOpen}
+        >
+          <span style={{ fontSize: 9 }}>{advancedOpen ? '▾' : '▸'}</span>
+          Advanced
+        </button>
+
+        {advancedOpen && (
+          <div className="advanced-content">
+            <Slider
+              label="Energy"
+              value={advancedSettings.energy}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, energy: v })}
+              accent="var(--accent-orange)"
+            />
+            <Slider
+              label="Organic"
+              value={advancedSettings.organic}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, organic: v })}
+              accent="var(--accent-green)"
+            />
+            <Slider
+              label="Density"
+              value={advancedSettings.density}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, density: v })}
+              accent="var(--accent-blue)"
+            />
+
+            {/* Motion style */}
+            <div className="input-row" style={{ marginBottom: 8 }}>
+              <span className="panel-label">Style</span>
+              <div className="mini-pills">
+                {MOTION_STYLES.map(s => (
+                  <button
+                    key={s}
+                    className={`mini-pill${advancedSettings.motionStyle === s ? ' active' : ''}`}
+                    onClick={() => setAdvancedSettings({ ...advancedSettings, motionStyle: s })}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Slider
+              label="Speed"
+              value={advancedSettings.motionSpeed}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, motionSpeed: v })}
+              accent="var(--accent-green)"
+              min={0}
+              max={1}
+            />
+            <Slider
+              label="Twist"
+              value={advancedSettings.twist}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, twist: v })}
+              accent="var(--accent-blue)"
+              min={0}
+              max={3}
+            />
+            <Slider
+              label="Bend"
+              value={advancedSettings.bend}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, bend: v })}
+              accent="var(--accent-blue)"
+              min={0}
+              max={3}
+            />
+
+            {/* Mirror toggles */}
+            <div className="toggle-row">
+              <span className="panel-label">Mirror X</span>
+              <button
+                className={`panel-toggle${advancedSettings.mirrorX ? ' active' : ''}`}
+                onClick={() => setAdvancedSettings({ ...advancedSettings, mirrorX: !advancedSettings.mirrorX })}
+                aria-label="Mirror X toggle"
+              >
+                {advancedSettings.mirrorX ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <div className="toggle-row">
+              <span className="panel-label">Mirror Y</span>
+              <button
+                className={`panel-toggle${advancedSettings.mirrorY ? ' active' : ''}`}
+                onClick={() => setAdvancedSettings({ ...advancedSettings, mirrorY: !advancedSettings.mirrorY })}
+                aria-label="Mirror Y toggle"
+              >
+                {advancedSettings.mirrorY ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            {/* Dot sizes */}
+            <Slider
+              label="Size min"
+              value={advancedSettings.dotSizeMin}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, dotSizeMin: v })}
+              accent="var(--accent-orange)"
+              min={0.001}
+              max={0.01}
+            />
+            <Slider
+              label="Size max"
+              value={advancedSettings.dotSizeMax}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, dotSizeMax: v })}
+              accent="var(--accent-orange)"
+              min={0.005}
+              max={0.05}
+            />
+            <Slider
+              label="Edge softness"
+              value={advancedSettings.edgeSoftness}
+              onChange={v => setAdvancedSettings({ ...advancedSettings, edgeSoftness: v })}
+              accent="var(--accent-orange)"
+              min={0.01}
+              max={0.2}
+            />
+
+            {/* Particle mode */}
+            <div className="panel-label" style={{ marginBottom: 4 }}>Particles</div>
+            <div className="mini-pills" style={{ flexWrap: 'wrap', gap: 3 }}>
+              {PARTICLE_MODES.map(m => (
+                <button
+                  key={m}
+                  className={`mini-pill${advancedSettings.particleMode === m ? ' active' : ''}`}
+                  onClick={() => setAdvancedSettings({ ...advancedSettings, particleMode: m })}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Image Source (only when image is loaded) */}
