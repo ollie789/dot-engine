@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { DotField, usePointerInfluence } from '@dot-engine/renderer';
-import type { Brand, BrandContext } from '@dot-engine/brand';
+import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
+import type { Brand, BrandContext, ParticlePresetName } from '@dot-engine/brand';
+import { particlePresets } from '@dot-engine/brand';
 
 /**
  * Convert the brand's SDF Float32Array into a THREE.DataTexture
@@ -35,9 +36,10 @@ interface SceneProps {
   pointerEnabled: boolean;
   colorPrimary: string;
   colorAccent: string;
+  particlePreset?: ParticlePresetName | 'none';
 }
 
-function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent }: SceneProps) {
+function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent, particlePreset }: SceneProps) {
   const pointer = usePointerInfluence({ smoothing: 0.85, enabled: pointerEnabled });
   const fieldRoot = useMemo(
     () => (brand ? brand.field(activeContext) : null),
@@ -57,6 +59,10 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
     };
   }, [brand]);
 
+  const particleConfig = particlePreset && particlePreset !== 'none'
+    ? particlePresets[particlePreset]
+    : null;
+
   if (!fieldRoot) return null;
 
   return (
@@ -71,6 +77,9 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
         pointerStrength={pointerEnabled ? 0.4 : 0}
         textures={textures}
       />
+      {particleConfig && (
+        <ParticleSystem config={particleConfig} color={colorPrimary} />
+      )}
       <OrbitControls />
     </>
   );
@@ -83,6 +92,7 @@ export interface Canvas3DProps {
   colorPrimary: string;
   colorAccent: string;
   isLoading?: boolean;
+  particlePreset?: ParticlePresetName | 'none';
 }
 
 export function Canvas3D({
@@ -92,6 +102,7 @@ export function Canvas3D({
   colorPrimary,
   colorAccent,
   isLoading,
+  particlePreset,
 }: Canvas3DProps) {
   return (
     <div className="canvas-wrapper">
@@ -111,6 +122,7 @@ export function Canvas3D({
           pointerEnabled={pointerEnabled}
           colorPrimary={colorPrimary}
           colorAccent={colorAccent}
+          particlePreset={particlePreset}
         />
       </Canvas>
 

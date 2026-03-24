@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { defineBrand, text, type Brand, type BrandContext } from '@dot-engine/brand';
-import type { MotionStyle } from '@dot-engine/brand';
+import type { MotionStyle, ParticlePresetName } from '@dot-engine/brand';
 import { TopBar } from './components/TopBar';
 import { Canvas3D } from './components/Canvas3D';
 import { BottomBar } from './components/BottomBar';
@@ -18,6 +18,7 @@ export function App() {
   const [motionStyle, setMotionStyle] = useState<MotionStyle>('flow');
   const [activeContext, setActiveContext] = useState<BrandContext>('logo');
   const [pointerEnabled, setPointerEnabled] = useState(true);
+  const [particlePreset, setParticlePreset] = useState<ParticlePresetName | 'none'>('none');
   const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -83,6 +84,7 @@ export function App() {
         colorPrimary={colorPrimary}
         colorAccent={colorAccent}
         isLoading={isLoading}
+        particlePreset={particlePreset}
       />
 
       <BottomBar
@@ -102,6 +104,8 @@ export function App() {
         setMotionStyle={setMotionStyle}
         pointerEnabled={pointerEnabled}
         setPointerEnabled={setPointerEnabled}
+        particlePreset={particlePreset}
+        setParticlePreset={setParticlePreset}
         config={config as Record<string, unknown>}
       />
     </div>

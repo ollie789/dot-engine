@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ColorSwatch } from './ColorSwatch';
 import { Slider } from './Slider';
-import type { MotionStyle } from '@dot-engine/brand';
+import type { MotionStyle, ParticlePresetName } from '@dot-engine/brand';
 
 const MOTION_STYLES: MotionStyle[] = ['flow', 'breathe', 'pulse', 'none'];
+const PARTICLE_OPTIONS: Array<ParticlePresetName | 'none'> = ['none', 'ambientDrift', 'burst', 'rising'];
 
 export interface BottomBarProps {
   colorPrimary: string;
@@ -22,6 +23,8 @@ export interface BottomBarProps {
   setMotionStyle: (s: MotionStyle) => void;
   pointerEnabled: boolean;
   setPointerEnabled: (e: boolean) => void;
+  particlePreset: ParticlePresetName | 'none';
+  setParticlePreset: (p: ParticlePresetName | 'none') => void;
   config: Record<string, unknown>;
 }
 
@@ -42,6 +45,8 @@ export function BottomBar({
   setMotionStyle,
   pointerEnabled,
   setPointerEnabled,
+  particlePreset,
+  setParticlePreset,
   config,
 }: BottomBarProps) {
   const [applyLabel, setApplyLabel] = useState('Apply');
@@ -104,6 +109,22 @@ export function BottomBar({
             onClick={() => setMotionStyle(s)}
           >
             {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="hud-separator" />
+
+      {/* Particle effect pills */}
+      <div className="motion-pills">
+        {PARTICLE_OPTIONS.map(p => (
+          <button
+            key={p}
+            className={`motion-pill${particlePreset === p ? ' active' : ''}`}
+            onClick={() => setParticlePreset(p)}
+            title={p === 'none' ? 'No particles' : `Particles: ${p}`}
+          >
+            {p === 'none' ? 'no fx' : p}
           </button>
         ))}
       </div>
