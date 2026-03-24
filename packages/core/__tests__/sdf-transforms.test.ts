@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { translate, rotate, scale } from '../src/sdf/transforms.js';
+import { translate, rotate, scale, twist, bend, repeat, mirror, elongate } from '../src/sdf/transforms.js';
 import { sphere } from '../src/sdf/primitives.js';
 import { _resetIds } from '../src/nodes/types.js';
 
@@ -47,6 +47,76 @@ describe('scale()', () => {
     const n = scale(s, 1.5);
     expect(n.child).toBe(s);
     expect(n.factor).toBe(1.5);
+  });
+});
+
+describe('twist()', () => {
+  it('returns a TwistNode with correct type', () => {
+    const n = twist(sphere(1), 0.5);
+    expect(n.type).toBe('twist');
+  });
+
+  it('stores child reference and amount', () => {
+    const s = sphere(0.5);
+    const n = twist(s, 1.2);
+    expect(n.child).toBe(s);
+    expect(n.amount).toBe(1.2);
+  });
+});
+
+describe('bend()', () => {
+  it('returns a BendNode with correct type', () => {
+    const n = bend(sphere(1), 0.3);
+    expect(n.type).toBe('bend');
+  });
+
+  it('stores child reference and amount', () => {
+    const s = sphere(0.5);
+    const n = bend(s, 0.8);
+    expect(n.child).toBe(s);
+    expect(n.amount).toBe(0.8);
+  });
+});
+
+describe('repeat()', () => {
+  it('returns a RepeatNode with correct type', () => {
+    const n = repeat(sphere(1), [2, 2, 2]);
+    expect(n.type).toBe('repeat');
+  });
+
+  it('stores child reference and spacing', () => {
+    const s = sphere(0.5);
+    const n = repeat(s, [1, 2, 3]);
+    expect(n.child).toBe(s);
+    expect(n.spacing).toEqual([1, 2, 3]);
+  });
+});
+
+describe('mirror()', () => {
+  it('returns a MirrorNode with correct type', () => {
+    const n = mirror(sphere(1), 'x');
+    expect(n.type).toBe('mirror');
+  });
+
+  it('stores child reference and axis', () => {
+    const s = sphere(0.5);
+    const n = mirror(s, 'y');
+    expect(n.child).toBe(s);
+    expect(n.axis).toBe('y');
+  });
+});
+
+describe('elongate()', () => {
+  it('returns an ElongateNode with correct type', () => {
+    const n = elongate(sphere(1), [0.1, 0.2, 0.3]);
+    expect(n.type).toBe('elongate');
+  });
+
+  it('stores child reference and amount', () => {
+    const s = sphere(0.5);
+    const n = elongate(s, [0.5, 0.5, 0.5]);
+    expect(n.child).toBe(s);
+    expect(n.amount).toEqual([0.5, 0.5, 0.5]);
   });
 });
 

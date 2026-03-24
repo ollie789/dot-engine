@@ -76,6 +76,12 @@ export interface TextureSdfNode extends BaseNode {
   readonly aspectRatio: number;
 }
 
+export interface MetaballNode extends BaseNode {
+  readonly type: 'metaball';
+  readonly centers: readonly { position: [number, number, number]; radius: number }[];
+  readonly threshold: number;
+}
+
 // ---------------------------------------------------------------------------
 // SDF Boolean nodes
 // ---------------------------------------------------------------------------
@@ -147,6 +153,36 @@ export interface ScaleNode extends BaseNode {
   readonly factor: number;
 }
 
+export interface TwistNode extends BaseNode {
+  readonly type: 'twist';
+  readonly child: SdfNode;
+  readonly amount: number; // radians per unit Y
+}
+
+export interface BendNode extends BaseNode {
+  readonly type: 'bend';
+  readonly child: SdfNode;
+  readonly amount: number; // bend strength
+}
+
+export interface RepeatNode extends BaseNode {
+  readonly type: 'repeat';
+  readonly child: SdfNode;
+  readonly spacing: [number, number, number];
+}
+
+export interface MirrorNode extends BaseNode {
+  readonly type: 'mirror';
+  readonly child: SdfNode;
+  readonly axis: 'x' | 'y' | 'z';
+}
+
+export interface ElongateNode extends BaseNode {
+  readonly type: 'elongate';
+  readonly child: SdfNode;
+  readonly amount: [number, number, number];
+}
+
 // ---------------------------------------------------------------------------
 // Union types
 // ---------------------------------------------------------------------------
@@ -161,7 +197,8 @@ export type SdfPrimitiveNode =
   | PlaneNode
   | CustomSdfNode
   | FromField2DNode
-  | TextureSdfNode;
+  | TextureSdfNode
+  | MetaballNode;
 
 export type SdfBooleanNode =
   | UnionNode
@@ -172,7 +209,7 @@ export type SdfBooleanNode =
   | SmoothIntersectNode
   | OnionNode;
 
-export type SdfTransformNode = TranslateNode | RotateNode | ScaleNode;
+export type SdfTransformNode = TranslateNode | RotateNode | ScaleNode | TwistNode | BendNode | RepeatNode | MirrorNode | ElongateNode;
 
 export type SdfNode = SdfPrimitiveNode | SdfBooleanNode | SdfTransformNode;
 

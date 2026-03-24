@@ -7,6 +7,7 @@ import {
   CapsuleNode,
   ConeNode,
   PlaneNode,
+  MetaballNode,
 } from '../nodes/types.js';
 
 export function sphere(radius: number): SphereNode {
@@ -38,4 +39,11 @@ export function cone(radius: number, height: number): ConeNode {
 
 export function plane(normal: [number, number, number], offset: number): PlaneNode {
   return { id: nodeId(), type: 'plane', normal, offset };
+}
+
+export function metaball(
+  centers: { position: [number, number, number]; radius: number }[],
+  threshold?: number,
+): MetaballNode {
+  return { id: nodeId(), type: 'metaball', centers, threshold: threshold ?? 1.0 };
 }

@@ -203,6 +203,62 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
       return evaluateSdf(node.child, sp) * node.factor;
     }
 
+    case 'twist': {
+      const angle = p[1] * node.amount;
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      const q: Vec3 = [c * p[0] - s * p[2], p[1], s * p[0] + c * p[2]];
+      return evaluateSdf(node.child, q);
+    }
+
+    case 'bend': {
+      const cb = Math.cos(node.amount * p[1]);
+      const sb = Math.sin(node.amount * p[1]);
+      const q: Vec3 = [cb * p[0] - sb * p[1], sb * p[0] + cb * p[1], p[2]];
+      return evaluateSdf(node.child, q);
+    }
+
+    case 'repeat': {
+      const [sx, sy, sz] = node.spacing;
+      const mod = (a: number, b: number) => ((a % b) + b) % b;
+      const q: Vec3 = [
+        mod(p[0] + sx * 0.5, sx) - sx * 0.5,
+        mod(p[1] + sy * 0.5, sy) - sy * 0.5,
+        mod(p[2] + sz * 0.5, sz) - sz * 0.5,
+      ];
+      return evaluateSdf(node.child, q);
+    }
+
+    case 'mirror': {
+      const q: Vec3 = [...p];
+      const axisIdx = node.axis === 'x' ? 0 : node.axis === 'y' ? 1 : 2;
+      q[axisIdx] = Math.abs(q[axisIdx]);
+      return evaluateSdf(node.child, q);
+    }
+
+    case 'elongate': {
+      const [ax, ay, az] = node.amount;
+      const q: Vec3 = [
+        p[0] - Math.max(-ax, Math.min(p[0], ax)),
+        p[1] - Math.max(-ay, Math.min(p[1], ay)),
+        p[2] - Math.max(-az, Math.min(p[2], az)),
+      ];
+      return evaluateSdf(node.child, q);
+    }
+
+    case 'metaball': {
+      let sum = 0;
+      for (const center of node.centers) {
+        const dx = p[0] - center.position[0];
+        const dy = p[1] - center.position[1];
+        const dz = p[2] - center.position[2];
+        const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const r = center.radius;
+        sum += (r * r) / (d * d + 1e-10);
+      }
+      return node.threshold - sum;
+    }
+
     default: {
       const _exhaustive: never = node;
       throw new Error(`evaluateSdf: unhandled node type: ${(_exhaustive as SdfNode).type}`);

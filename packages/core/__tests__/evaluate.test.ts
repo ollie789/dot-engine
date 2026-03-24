@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { _resetIds } from '../src/nodes/types.js';
-import { sphere, box, torus, cylinder, capsule, cone, plane } from '../src/sdf/primitives.js';
+import { sphere, box, torus, cylinder, capsule, cone, plane, metaball } from '../src/sdf/primitives.js';
 import { union, smoothUnion, subtract, onion } from '../src/sdf/boolean.js';
-import { translate, scale, rotate } from '../src/sdf/transforms.js';
+import { translate, scale, rotate, twist, bend, repeat, mirror, elongate } from '../src/sdf/transforms.js';
 import { evaluateSdf } from '../src/evaluate.js';
 
 beforeEach(() => {
@@ -187,5 +187,128 @@ describe('evaluateSdf — rotate', () => {
     expect(evaluateSdf(sdf, [0, 1, 0])).toBeCloseTo(-0.3);
     // At [0, 0, 0] (old center, now far from sphere) → should be > 0
     expect(evaluateSdf(sdf, [1, 0, 0])).toBeGreaterThan(0);
+  });
+});
+
+describe('evaluateSdf — twist', () => {
+  it('at y=0 twist has no effect (angle=0)', () => {
+    // twist with any amount: at y=0, the rotation angle is 0, so the point is unchanged
+    const sdf = twist(sphere(1), 2.0);
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-1);
+  });
+
+  it('twists the xz plane around y', () => {
+    // A box centered at origin. twist rotates xz based on y.
+    // At y=0, no rotation. At y!=0, rotation occurs.
+    const sdf = twist(box([0.5, 1, 0.5]), Math.PI / 2);
+    // At origin, no twist → inside box
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeLessThan(0);
+  });
+});
+
+describe('evaluateSdf — bend', () => {
+  it('at y=0 bend has no effect', () => {
+    const sdf = bend(sphere(1), 1.0);
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-1);
+  });
+
+  it('bends a cylinder', () => {
+    const sdf = bend(cylinder(0.3, 2.0), 0.5);
+    // At origin, still inside
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeLessThan(0);
+  });
+});
+
+describe('evaluateSdf — repeat', () => {
+  it('repeats a sphere at origin', () => {
+    const sdf = repeat(sphere(0.3), [2, 2, 2]);
+    // At origin, should be inside sphere
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-0.3);
+  });
+
+  it('repeats a sphere at one period away', () => {
+    const sdf = repeat(sphere(0.3), [2, 2, 2]);
+    // At [2, 0, 0], it wraps back to origin in the repeated domain
+    expect(evaluateSdf(sdf, [2, 0, 0])).toBeCloseTo(-0.3);
+  });
+
+  it('between repeats should be outside', () => {
+    const sdf = repeat(sphere(0.3), [2, 2, 2]);
+    // At [1, 0, 0], midpoint between repeats — should be outside
+    expect(evaluateSdf(sdf, [1, 0, 0])).toBeGreaterThan(0);
+  });
+});
+
+describe('evaluateSdf — mirror', () => {
+  it('mirrors along x — negative x maps to positive', () => {
+    // Translate sphere to [1,0,0], then mirror x
+    // At [-1,0,0] (mirrored to [1,0,0]) should be inside
+    const sdf = mirror(translate(sphere(0.3), [1, 0, 0]), 'x');
+    expect(evaluateSdf(sdf, [-1, 0, 0])).toBeCloseTo(-0.3);
+    expect(evaluateSdf(sdf, [1, 0, 0])).toBeCloseTo(-0.3);
+  });
+
+  it('mirrors along y', () => {
+    const sdf = mirror(translate(sphere(0.3), [0, 1, 0]), 'y');
+    expect(evaluateSdf(sdf, [0, -1, 0])).toBeCloseTo(-0.3);
+  });
+
+  it('mirrors along z', () => {
+    const sdf = mirror(translate(sphere(0.3), [0, 0, 1]), 'z');
+    expect(evaluateSdf(sdf, [0, 0, -1])).toBeCloseTo(-0.3);
+  });
+});
+
+describe('evaluateSdf — elongate', () => {
+  it('elongated sphere becomes capsule-like', () => {
+    // elongate(sphere(0.5), [0, 0.5, 0]) stretches sphere along y by 0.5
+    // At origin, the clamped value is 0, so q = [0,0,0], sphere = -0.5
+    const sdf = elongate(sphere(0.5), [0, 0.5, 0]);
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-0.5);
+  });
+
+  it('elongated sphere: inside the elongated region', () => {
+    // At [0, 0.3, 0]: q = [0, 0.3 - clamp(0.3, -0.5, 0.5), 0] = [0, 0, 0]
+    // sphere at [0,0,0] = -0.5
+    const sdf = elongate(sphere(0.5), [0, 0.5, 0]);
+    expect(evaluateSdf(sdf, [0, 0.3, 0])).toBeCloseTo(-0.5);
+  });
+
+  it('elongated sphere: outside beyond elongation', () => {
+    // At [0, 2, 0]: q = [0, 2 - 0.5, 0] = [0, 1.5, 0]
+    // sphere at [0,1.5,0] = 1.5 - 0.5 = 1.0
+    const sdf = elongate(sphere(0.5), [0, 0.5, 0]);
+    expect(evaluateSdf(sdf, [0, 2, 0])).toBeCloseTo(1.0);
+  });
+});
+
+describe('evaluateSdf — metaball', () => {
+  it('returns negative at center of single ball (inside)', () => {
+    const sdf = metaball([{ position: [0, 0, 0], radius: 1 }], 1.0);
+    // At origin: sum = (1^2) / (0 + 1e-10) → very large → threshold - sum << 0
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeLessThan(0);
+  });
+
+  it('returns positive far away (outside)', () => {
+    const sdf = metaball([{ position: [0, 0, 0], radius: 0.5 }], 1.0);
+    // At [10, 0, 0]: sum = 0.25 / 100 = 0.0025, result = 1.0 - 0.0025 > 0
+    expect(evaluateSdf(sdf, [10, 0, 0])).toBeGreaterThan(0);
+  });
+
+  it('two balls merge in the middle', () => {
+    const sdf = metaball([
+      { position: [-0.5, 0, 0], radius: 0.5 },
+      { position: [0.5, 0, 0], radius: 0.5 },
+    ], 1.0);
+    // At origin: midpoint of two balls
+    // sum = 0.25/0.25 + 0.25/0.25 = 1 + 1 = 2
+    // result = 1.0 - 2 = -1.0 (inside merged blob)
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-1.0);
+  });
+
+  it('uses custom threshold', () => {
+    const sdf = metaball([{ position: [0, 0, 0], radius: 0.5 }], 2.0);
+    // At [1, 0, 0]: sum = 0.25 / 1 = 0.25, result = 2.0 - 0.25 = 1.75
+    expect(evaluateSdf(sdf, [1, 0, 0])).toBeCloseTo(1.75);
   });
 });
