@@ -1,5 +1,13 @@
 // Node types
 export type {
+  ParticleEmitter,
+  ParticleLifecycle,
+  ParticleMotion,
+  ParticleNode,
+} from './nodes/types.js';
+export { particles, pointEmitter, surfaceEmitter, burstEmitter } from './nodes/particles.js';
+
+export type {
   BaseNode,
   SphereNode,
   BoxNode,

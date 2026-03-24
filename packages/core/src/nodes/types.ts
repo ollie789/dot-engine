@@ -283,6 +283,40 @@ export interface OpacityNode extends BaseNode {
 }
 
 // ---------------------------------------------------------------------------
+// Particle nodes
+// ---------------------------------------------------------------------------
+
+export interface ParticleEmitter {
+  readonly type: 'point' | 'surface' | 'volume';
+  readonly position?: [number, number, number];
+  readonly rate: number;
+  readonly burst?: number;
+}
+
+export interface ParticleLifecycle {
+  readonly lifetime: number;
+  readonly fadeIn?: number;
+  readonly fadeOut?: number;
+}
+
+export interface ParticleMotion {
+  readonly velocity?: [number, number, number];
+  readonly speed?: number;
+  readonly spread?: number;
+  readonly gravity?: [number, number, number];
+  readonly drag?: number;
+  readonly turbulence?: number;
+}
+
+export interface ParticleNode extends BaseNode {
+  readonly type: 'particle';
+  readonly emitter: ParticleEmitter;
+  readonly lifecycle: ParticleLifecycle;
+  readonly motion: ParticleMotion;
+  readonly maxParticles?: number;
+}
+
+// ---------------------------------------------------------------------------
 // Field root
 // ---------------------------------------------------------------------------
 
@@ -293,7 +327,8 @@ export type FieldChildNode =
   | DisplaceNode
   | ColorFieldNode
   | SizeNode
-  | OpacityNode;
+  | OpacityNode
+  | ParticleNode;
 
 export interface FieldRoot extends BaseNode {
   readonly type: 'field';
