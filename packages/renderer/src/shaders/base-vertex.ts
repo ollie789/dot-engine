@@ -6,6 +6,8 @@ uniform float uTime;
 uniform vec3 uResolution;
 uniform vec3 uBounds;
 
+{{NOISE_FUNCTIONS}}
+
 {{SDF_FUNCTIONS}}
 
 vec3 indexToGrid(int idx, vec3 res, vec3 bounds) {
@@ -20,11 +22,13 @@ vec3 indexToGrid(int idx, vec3 res, vec3 bounds) {
 
 void main() {
   vec3 gridPos = indexToGrid(gl_InstanceID, uResolution, uBounds);
-  float d = {{SDF_ROOT}}(gridPos);
+  vec3 displaced = gridPos;
+{{DISPLACEMENT}}
+  float d = {{SDF_ROOT}}(displaced);
   float edgeSoftness = 0.05;
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
   vec3 scaledPos = position * field * 0.02;
-  vec3 worldPos = gridPos + scaledPos;
+  vec3 worldPos = displaced + scaledPos;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
   vFieldValue = field;
   vDistance = d;
