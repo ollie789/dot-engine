@@ -69,6 +69,13 @@ export interface FromField2DNode extends BaseNode {
   readonly fieldId: string;
 }
 
+export interface TextureSdfNode extends BaseNode {
+  readonly type: 'textureSdf';
+  readonly textureId: string;
+  readonly depth: number;
+  readonly aspectRatio: number;
+}
+
 // ---------------------------------------------------------------------------
 // SDF Boolean nodes
 // ---------------------------------------------------------------------------
@@ -153,7 +160,8 @@ export type SdfPrimitiveNode =
   | ConeNode
   | PlaneNode
   | CustomSdfNode
-  | FromField2DNode;
+  | FromField2DNode
+  | TextureSdfNode;
 
 export type SdfBooleanNode =
   | UnionNode

@@ -10,6 +10,7 @@ export type {
   PlaneNode,
   CustomSdfNode,
   FromField2DNode,
+  TextureSdfNode,
   UnionNode,
   SmoothUnionNode,
   SubtractNode,

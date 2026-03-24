@@ -133,6 +133,10 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
       throw new Error('evaluateSdf: fromField2D is not implemented in Phase 1');
     }
 
+    case 'textureSdf': {
+      throw new Error('evaluateSdf: textureSdf requires GPU — cannot evaluate on CPU');
+    }
+
     // ---- Booleans ----------------------------------------------------------
 
     case 'union': {
