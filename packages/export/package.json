@@ -16,9 +16,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dot-engine/core": "workspace:*"
+    "@dot-engine/core": "workspace:*",
+    "@dot-engine/renderer": "workspace:*"
   },
   "peerDependencies": {
     "three": "^0.175.0"
+  },
+  "devDependencies": {
+    "three": "^0.175.0",
+    "@types/three": "^0.175.0"
   }
 }
