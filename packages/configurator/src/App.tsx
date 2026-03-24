@@ -23,6 +23,7 @@ export function App() {
   const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageData, setImageData] = useState<ImageFieldData | null>(null);
+  const [imageResolution, setImageResolution] = useState(128);
   const [activeFormat, setActiveFormat] = useState<OutputFormat>(OUTPUT_FORMATS[0]);
 
   // Track canvas container size for dimension display in TopBar
@@ -95,6 +96,8 @@ export function App() {
         activeContext={activeContext}
         setActiveContext={setActiveContext}
         onImageLoad={setImageData}
+        imageResolution={imageResolution}
+        setImageResolution={setImageResolution}
         formats={OUTPUT_FORMATS}
         activeFormat={activeFormat}
         setActiveFormat={setActiveFormat}
@@ -137,6 +140,9 @@ export function App() {
         particlePreset={particlePreset}
         setParticlePreset={setParticlePreset}
         config={config as Record<string, unknown>}
+        brand={brand}
+        activeContext={activeContext}
+        format={activeFormat}
       />
     </div>
   );

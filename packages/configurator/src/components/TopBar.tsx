@@ -25,6 +25,8 @@ export interface TopBarProps {
   setActiveContext: (c: BrandContext) => void;
   dotCount?: number;
   onImageLoad?: (data: ImageFieldData | null) => void;
+  imageResolution?: number;
+  setImageResolution?: (r: number) => void;
   formats: OutputFormat[];
   activeFormat: OutputFormat;
   setActiveFormat: (f: OutputFormat) => void;
@@ -43,6 +45,8 @@ export function TopBar({
   setActiveContext,
   dotCount,
   onImageLoad,
+  imageResolution = 128,
+  setImageResolution,
   formats,
   activeFormat,
   setActiveFormat,
@@ -65,7 +69,7 @@ export function TopBar({
     if (!file) return;
     const url = URL.createObjectURL(file);
     try {
-      const data = await loadImageForField(url, 256);
+      const data = await loadImageForField(url, imageResolution);
       onImageLoad?.(data);
     } catch (err) {
       console.error('Failed to load image for field:', err);
@@ -154,6 +158,21 @@ export function TopBar({
         style={{ display: 'none' }}
         onChange={handleImageChange}
       />
+
+      {setImageResolution && (
+        <select
+          className="format-select"
+          value={imageResolution}
+          onChange={e => setImageResolution(Number(e.target.value))}
+          title="Image field resolution"
+          aria-label="Image field resolution"
+          style={{ width: 56 }}
+        >
+          {[64, 128, 256, 512].map(r => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+      )}
 
       <div className="hud-separator" />
 

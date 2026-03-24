@@ -233,9 +233,12 @@ function emitImageFieldVertex(node: ImageFieldNode): string {
     `    float imgValue = 0.0;`,
     `    if (imgUv.x >= 0.0 && imgUv.x <= 1.0 && imgUv.y >= 0.0 && imgUv.y <= 1.0) {`,
     `      imgSample = texture2D(uImageField, imgUv);`,
-    `      imgValue = ${mode} == 0`,
+    `      float rawValue = ${mode} == 0`,
     `        ? dot(imgSample.rgb, vec3(0.299, 0.587, 0.114))`,
     `        : imgSample.a;`,
+    `      float gamma = 1.8;`,
+    `      float mapped = pow(rawValue, 1.0 / gamma);`,
+    `      imgValue = smoothstep(0.05, 0.95, mapped);`,
     `    }`,
     `    if (imgValue < ${threshold}) {`,
     `      gl_Position = vec4(0.0, 0.0, -999.0, 1.0);`,
@@ -367,7 +370,7 @@ export function compileField(root: FieldRoot): CompiledField {
     .replace('{{EXTRA_UNIFORMS}}', extraUniformsCode)
     .replace('{{NOISE_FUNCTIONS}}', noiseFunctions)
     .replace('{{SDF_FUNCTIONS}}', sdfFunctions)
-    .replace('{{SDF_ROOT}}', rootFn)
+    .replaceAll('{{SDF_ROOT}}', rootFn)
     .replace('{{DISPLACEMENT}}', displacementLines)
     .replace('{{IMAGE_FIELD}}', imageFieldCode)
     .replace('{{SIZE_EXPR}}', sizeExpr);
