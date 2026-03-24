@@ -1,8 +1,33 @@
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 import { DotField, usePointerInfluence } from '@dot-engine/renderer';
 import type { Brand, BrandContext } from '@dot-engine/brand';
+
+/**
+ * Convert the brand's SDF Float32Array into a THREE.DataTexture
+ * that the DotField shader can sample.
+ */
+function createSdfTexture(
+  sdfData: Float32Array,
+  width: number,
+  height: number,
+): THREE.DataTexture {
+  const tex = new THREE.DataTexture(
+    sdfData,
+    width,
+    height,
+    THREE.RedFormat,
+    THREE.FloatType,
+  );
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
 
 interface SceneProps {
   brand: Brand | null;
@@ -19,6 +44,19 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
     [brand, activeContext],
   );
 
+  // Build textures map from the brand's processed logo
+  const textures = useMemo(() => {
+    if (!brand?.logo) return undefined;
+    const { sdfTexture, width, height, textureId, sdfNode } = brand.logo;
+    return {
+      [textureId]: {
+        texture: createSdfTexture(sdfTexture, width, height),
+        depth: sdfNode.depth,
+        aspectRatio: sdfNode.aspectRatio,
+      },
+    };
+  }, [brand]);
+
   if (!fieldRoot) return null;
 
   return (
@@ -31,6 +69,7 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
         lod="auto"
         pointerPosition={pointerEnabled ? pointer.position : undefined}
         pointerStrength={pointerEnabled ? 0.4 : 0}
+        textures={textures}
       />
       <OrbitControls />
     </>
