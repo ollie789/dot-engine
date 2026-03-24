@@ -11,3 +11,5 @@ export { buildContextField } from './brand/contexts.js';
 export { buildDataField } from './brand/data-field.js';
 export { BrandMoment } from './components/BrandMoment.js';
 export type { BrandMomentProps } from './components/BrandMoment.js';
+export { particlePresets } from './brand/particle-presets.js';
+export type { ParticlePresetName } from './brand/particle-presets.js';
