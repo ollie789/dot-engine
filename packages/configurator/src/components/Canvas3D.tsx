@@ -224,21 +224,35 @@ export function Canvas3D({
     ? format.aspect
     : containerSize.width / Math.max(containerSize.height, 1);
 
+  // For locked formats, add overflow padding so dots bleed past the frame edge
+  const overflowPx = format.aspect > 0 ? 60 : 0;
+  const canvasStyle: React.CSSProperties = format.aspect > 0 && containerSize.width > 0
+    ? {
+        position: 'absolute',
+        left: canvasRect.x - overflowPx,
+        top: canvasRect.y - overflowPx,
+        width: canvasRect.width + overflowPx * 2,
+        height: canvasRect.height + overflowPx * 2,
+      }
+    : { position: 'absolute', inset: 0 };
+
   return (
     <div ref={containerRef} className="canvas-wrapper">
-      {/* R3F canvas fills entire wrapper — overflow dots visible */}
-      <Canvas camera={{ position: [0, 0, 3], fov: 50, aspect: effectiveAspect }}>
-        <Scene
-          brand={brand}
-          activeContext={activeContext}
-          pointerEnabled={pointerEnabled}
-          colorPrimary={colorPrimary}
-          colorAccent={colorAccent}
-          particlePreset={particlePreset}
-          imageData={imageData}
-          effectiveAspect={effectiveAspect}
-        />
-      </Canvas>
+      {/* R3F canvas sized to frame + overflow bleed */}
+      <div style={canvasStyle}>
+        <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+          <Scene
+            brand={brand}
+            activeContext={activeContext}
+            pointerEnabled={pointerEnabled}
+            colorPrimary={colorPrimary}
+            colorAccent={colorAccent}
+            particlePreset={particlePreset}
+            imageData={imageData}
+            effectiveAspect={effectiveAspect}
+          />
+        </Canvas>
+      </div>
 
       {/* Format frame overlay — only shown when aspect is locked */}
       {format.aspect > 0 && containerSize.width > 0 && (
