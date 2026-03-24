@@ -33,6 +33,13 @@ export type {
   AttractConfig,
   NoiseConfig,
   DisplaceNode,
+  ColorMode,
+  ColorNode,
+  GradientColorNode,
+  NoiseColorNode,
+  ColorFieldNode,
+  SizeNode,
+  OpacityNode,
   FieldChildNode,
   FieldRoot,
 } from './nodes/types.js';
@@ -48,6 +55,11 @@ export type { AnimateOptions } from './nodes/animate.js';
 
 // Displacement builders
 export { simplex3D, domainWarp3D, flowField3D, attract, displace } from './nodes/displace.js';
+
+// Color / size / opacity builders
+export { color, gradient, noiseColor } from './nodes/color.js';
+export { size } from './nodes/size.js';
+export { opacity } from './nodes/opacity.js';
 
 // SDF builders
 export * from './sdf/index.js';

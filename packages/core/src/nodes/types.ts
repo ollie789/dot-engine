@@ -221,10 +221,63 @@ export interface DisplaceNode extends BaseNode {
 }
 
 // ---------------------------------------------------------------------------
+// Color nodes
+// ---------------------------------------------------------------------------
+
+export type ColorMode = 'depth' | 'position' | 'noise' | 'uniform';
+
+export interface ColorNode extends BaseNode {
+  readonly type: 'color';
+  readonly primary: string;
+  readonly accent: string;
+  readonly mode: ColorMode;
+}
+
+export interface GradientColorNode extends BaseNode {
+  readonly type: 'gradientColor';
+  readonly axis: 'x' | 'y' | 'z';
+  readonly stops: readonly (readonly [string, number])[];
+}
+
+export interface NoiseColorNode extends BaseNode {
+  readonly type: 'noiseColor';
+  readonly palette: readonly string[];
+  readonly scale: number;
+  readonly speed: number;
+}
+
+export type ColorFieldNode = ColorNode | GradientColorNode | NoiseColorNode;
+
+// ---------------------------------------------------------------------------
+// Size / Opacity nodes
+// ---------------------------------------------------------------------------
+
+export interface SizeNode extends BaseNode {
+  readonly type: 'size';
+  readonly min: number;
+  readonly max: number;
+  readonly mode: 'depth' | 'uniform';
+}
+
+export interface OpacityNode extends BaseNode {
+  readonly type: 'opacity';
+  readonly min: number;
+  readonly max: number;
+  readonly mode: 'depth' | 'edgeGlow' | 'uniform';
+}
+
+// ---------------------------------------------------------------------------
 // Field root
 // ---------------------------------------------------------------------------
 
-export type FieldChildNode = ShapeNode | GridNode | AnimateNode | DisplaceNode;
+export type FieldChildNode =
+  | ShapeNode
+  | GridNode
+  | AnimateNode
+  | DisplaceNode
+  | ColorFieldNode
+  | SizeNode
+  | OpacityNode;
 
 export interface FieldRoot {
   readonly type: 'field';
