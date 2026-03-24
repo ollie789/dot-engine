@@ -1,21 +1,37 @@
 {
   "name": "@bigpuddle/dot-engine-renderer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React Three Fiber rendering layer for dot-engine — GLSL/WGSL compilers, DotField components, LOD, hooks",
   "license": "MIT",
   "author": "bigpuddle",
-  "repository": { "type": "git", "url": "https://github.com/bigpuddle/dot-engine" },
-  "keywords": ["3d", "dots", "r3f", "react-three-fiber", "webgl", "instanced-mesh", "shader"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bigpuddle/dot-engine"
+  },
+  "keywords": [
+    "3d",
+    "dots",
+    "r3f",
+    "react-three-fiber",
+    "webgl",
+    "instanced-mesh",
+    "shader"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "dist"
   ],
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit"
