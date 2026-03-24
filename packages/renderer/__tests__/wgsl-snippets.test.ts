@@ -11,6 +11,12 @@ import {
   smoothSubtract,
   smoothIntersect,
   onion,
+  twist,
+  bend,
+  repeat,
+  mirror,
+  elongate,
+  metaball,
 } from '../../core/src/index.js';
 import { wgslForNode, collectWgslSnippets } from '../src/compiler/wgsl-snippets.js';
 
@@ -90,6 +96,51 @@ describe('wgslForNode', () => {
     const node = onion(sphere(0.5), 0.1);
     const wgsl = wgslForNode(node);
     expect(wgsl).toContain('abs(');
+  });
+
+  it('twist emits cos/sin rotation', () => {
+    const node = twist(sphere(0.5), 1.5);
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('cos(angle)');
+    expect(wgsl).toContain('sin(angle)');
+    expect(wgsl).toContain('1.5');
+  });
+
+  it('bend emits cos/sin pattern', () => {
+    const node = bend(sphere(0.5), 0.8);
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('cos(');
+    expect(wgsl).toContain('sin(');
+    expect(wgsl).toContain('0.8');
+  });
+
+  it('repeat emits modulo pattern', () => {
+    const node = repeat(sphere(0.3), [2, 2, 2]);
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('%');
+    expect(wgsl).toContain('2.0');
+  });
+
+  it('mirror emits abs on axis', () => {
+    const node = mirror(sphere(0.5), 'x');
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('abs(q.x)');
+  });
+
+  it('elongate emits clamp pattern', () => {
+    const node = elongate(sphere(0.5), [0.1, 0.2, 0.3]);
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('clamp(p, -amt, amt)');
+  });
+
+  it('metaball emits sum pattern', () => {
+    const node = metaball([
+      { position: [0, 0, 0], radius: 0.5 },
+      { position: [1, 0, 0], radius: 0.3 },
+    ]);
+    const wgsl = wgslForNode(node);
+    expect(wgsl).toContain('sum');
+    expect(wgsl).toContain('dist2');
   });
 });
 

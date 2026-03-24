@@ -218,6 +218,81 @@ function emitNode(node: SdfNode, out: Map<string, WgslSnippet>): string {
       break;
     }
 
+    case 'twist': {
+      const childFn = emitNode(node.child, out);
+      deps.push(childFn);
+      body = [
+        `  let angle = p.y * ${f(node.amount)};`,
+        `  let c = cos(angle); let s = sin(angle);`,
+        `  let q = vec3f(c*p.x - s*p.z, p.y, s*p.x + c*p.z);`,
+        `  return ${childFn}(q);`,
+      ].join('\n');
+      break;
+    }
+
+    case 'bend': {
+      const childFn = emitNode(node.child, out);
+      deps.push(childFn);
+      body = [
+        `  let c = cos(${f(node.amount)} * p.y);`,
+        `  let s = sin(${f(node.amount)} * p.y);`,
+        `  let q = vec3f(c*p.x - s*p.y, s*p.x + c*p.y, p.z);`,
+        `  return ${childFn}(q);`,
+      ].join('\n');
+      break;
+    }
+
+    case 'repeat': {
+      const childFn = emitNode(node.child, out);
+      deps.push(childFn);
+      const [sx, sy, sz] = node.spacing;
+      body = [
+        `  let sp = vec3f(${f(sx)}, ${f(sy)}, ${f(sz)});`,
+        `  let q = (p + sp*0.5) % sp - sp*0.5;`,
+        `  return ${childFn}(q);`,
+      ].join('\n');
+      break;
+    }
+
+    case 'mirror': {
+      const childFn = emitNode(node.child, out);
+      deps.push(childFn);
+      body = [
+        `  var q = p; q.${node.axis} = abs(q.${node.axis});`,
+        `  return ${childFn}(q);`,
+      ].join('\n');
+      break;
+    }
+
+    case 'elongate': {
+      const childFn = emitNode(node.child, out);
+      deps.push(childFn);
+      const [ax, ay, az] = node.amount;
+      body = [
+        `  let amt = vec3f(${f(ax)}, ${f(ay)}, ${f(az)});`,
+        `  let q = p - clamp(p, -amt, amt);`,
+        `  return ${childFn}(q);`,
+      ].join('\n');
+      break;
+    }
+
+    case 'metaball': {
+      const lines: string[] = ['  var sum = 0.0;'];
+      const maxCenters = Math.min(node.centers.length, 8);
+      for (let i = 0; i < maxCenters; i++) {
+        const c = node.centers[i];
+        const [cx, cy, cz] = c.position;
+        lines.push(
+          `  { let d = p - vec3f(${f(cx)}, ${f(cy)}, ${f(cz)});`,
+          `    let dist2 = dot(d, d) + 1e-10;`,
+          `    sum += (${f(c.radius * c.radius)}) / dist2; }`,
+        );
+      }
+      lines.push(`  return ${f(node.threshold)} - sum;`);
+      body = lines.join('\n');
+      break;
+    }
+
     default: {
       const _exhaustive: never = node;
       throw new Error(`Unknown node type: ${(_exhaustive as SdfNode).type}`);
