@@ -1,14 +1,20 @@
 export const BASE_FRAGMENT = `
 varying float vFieldValue;
 varying float vDistance;
+varying vec3 vPosition;
 
 uniform vec3 uColorPrimary;
 uniform vec3 uColorAccent;
+uniform float uTime;
+
+{{FRAGMENT_FUNCTIONS}}
 
 void main() {
   if (vFieldValue < 0.01) discard;
-  vec3 color = mix(uColorPrimary, uColorAccent, vFieldValue);
-  float alpha = vFieldValue * 0.9;
+
+  {{COLOR_LOGIC}}
+
+  float alpha = {{OPACITY_EXPR}};
   gl_FragColor = vec4(color, alpha);
 }
 `;

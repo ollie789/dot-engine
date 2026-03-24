@@ -1,6 +1,7 @@
 export const BASE_VERTEX = `
 varying float vFieldValue;
 varying float vDistance;
+varying vec3 vPosition;
 
 uniform float uTime;
 uniform vec3 uResolution;
@@ -32,5 +33,6 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(worldPos, 1.0);
   vFieldValue = field;
   vDistance = d;
+  vPosition = (displaced / uBounds) + 0.5;
 }
 `;
