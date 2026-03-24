@@ -1,8 +1,29 @@
 import { useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import { presets } from '@dot-engine/core';
-import { DotFieldCanvas } from '@dot-engine/renderer';
+import { DotField, usePointerInfluence } from '@dot-engine/renderer';
 
 const presetNames = Object.keys(presets) as (keyof typeof presets)[];
+
+function Scene({ activePreset }: { activePreset: keyof typeof presets }) {
+  const pointer = usePointerInfluence({ smoothing: 0.85 });
+
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <DotField
+        field={presets[activePreset]}
+        colorPrimary="#2D7A4A"
+        colorAccent="#E07A5F"
+        lod="auto"
+        pointerPosition={pointer.position}
+        pointerStrength={0.5}
+      />
+      <OrbitControls />
+    </>
+  );
+}
 
 export function App() {
   const [active, setActive] = useState<keyof typeof presets>('organic');
@@ -37,9 +58,14 @@ export function App() {
             {name}
           </button>
         ))}
+        <span style={{ color: '#555', fontSize: '11px', alignSelf: 'center', marginLeft: 'auto' }}>
+          Move mouse over dots to interact
+        </span>
       </div>
       <div style={{ flex: 1 }}>
-        <DotFieldCanvas field={presets[active]} lod="auto" />
+        <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+          <Scene activePreset={active} />
+        </Canvas>
       </div>
     </div>
   );
