@@ -1,5 +1,5 @@
-import { displace, simplex3D, flowField3D } from '@dot-engine/core';
-import type { DisplaceNode } from '@dot-engine/core';
+import { displace, simplex3D, flowField3D } from '@bigpuddle/dot-engine-core';
+import type { DisplaceNode } from '@bigpuddle/dot-engine-core';
 
 export type MotionStyle = 'flow' | 'breathe' | 'pulse' | 'none';
 

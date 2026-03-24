@@ -1,4 +1,4 @@
-import type { SdfNode } from '@dot-engine/core';
+import type { SdfNode } from '@bigpuddle/dot-engine-core';
 
 export interface GlslSnippet {
   fnName: string;

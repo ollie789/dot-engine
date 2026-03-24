@@ -1,5 +1,5 @@
-import { field, shape, grid, animate, color, size, twist, bend, mirror } from '@dot-engine/core';
-import type { FieldChildNode, FieldRoot, SdfNode } from '@dot-engine/core';
+import { field, shape, grid, animate, color, size, twist, bend, mirror } from '@bigpuddle/dot-engine-core';
+import type { FieldChildNode, FieldRoot, SdfNode } from '@bigpuddle/dot-engine-core';
 import type { Brand, ContextOptions } from './types.js';
 import type { MappedParams } from './personality.js';
 import { motionToDisplacements } from './motion.js';

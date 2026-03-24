@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { FieldRoot, AnimateNode, DisplaceNode, ImageFieldNode } from '@dot-engine/core';
+import type { FieldRoot, AnimateNode, DisplaceNode, ImageFieldNode } from '@bigpuddle/dot-engine-core';
 import { compileField } from '../compiler/compiler.js';
 import { computeLodTier, type LodOverride, type LodTier } from './LodBenchmark.js';
 

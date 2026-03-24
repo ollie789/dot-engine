@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { Brand, BrandContext } from '@dot-engine/brand';
+import type { Brand, BrandContext } from '@bigpuddle/dot-engine-brand';
 import type { OutputFormat } from '../formats';
 
 export interface BottomBarProps {
@@ -54,7 +54,7 @@ export function BottomBar({
     setExportMenuOpen(false);
     if (!brand) return;
     const fieldRoot = brand.field(activeContext, { canvasAspect: aspect || 16 / 9 });
-    const { exportPNG } = await import('@dot-engine/export');
+    const { exportPNG } = await import('@bigpuddle/dot-engine-export');
     const blob = await exportPNG(fieldRoot, {
       width: aspect > 0 ? Math.round(2048 * aspect / Math.max(aspect, 1)) : 2048,
       height: aspect > 0 ? Math.round(2048 / Math.max(aspect, 1)) : 2048,
@@ -72,7 +72,7 @@ export function BottomBar({
     setExportMenuOpen(false);
     if (!brand) return;
     const fieldRoot = brand.field(activeContext);
-    const { exportSVG } = await import('@dot-engine/export');
+    const { exportSVG } = await import('@bigpuddle/dot-engine-export');
     const result = exportSVG(fieldRoot, {
       width: 1200,
       height: aspect > 0 ? Math.round(1200 / aspect) : 1200,

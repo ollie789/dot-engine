@@ -1,5 +1,5 @@
-import { particles, pointEmitter, surfaceEmitter } from '@dot-engine/core';
-import type { ParticleNode } from '@dot-engine/core';
+import { particles, pointEmitter, surfaceEmitter } from '@bigpuddle/dot-engine-core';
+import type { ParticleNode } from '@bigpuddle/dot-engine-core';
 import type { BrandConfig } from './types.js';
 import type { MappedParams } from './personality.js';
 

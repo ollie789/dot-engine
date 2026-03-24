@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { exportSVG } from '../src/svg';
-import { field, shape, grid, sphere, smoothUnion, torus, translate, color } from '@dot-engine/core';
+import { field, shape, grid, sphere, smoothUnion, torus, translate, color } from '@bigpuddle/dot-engine-core';
 
 describe('exportSVG', () => {
   it('exports a simple sphere as SVG', () => {

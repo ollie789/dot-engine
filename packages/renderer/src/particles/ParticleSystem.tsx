@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { ParticleNode } from '@dot-engine/core';
+import type { ParticleNode } from '@bigpuddle/dot-engine-core';
 import {
   PARTICLE_STRIDE,
   createParticlePool,

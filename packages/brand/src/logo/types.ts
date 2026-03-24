@@ -1,4 +1,4 @@
-import type { TextureSdfNode } from '@dot-engine/core';
+import type { TextureSdfNode } from '@bigpuddle/dot-engine-core';
 
 export interface SvgInput { type: 'svg'; source: string; }
 export interface ImageInput { type: 'image'; source: string; }

@@ -17,11 +17,11 @@ importers:
 
   packages/brand:
     dependencies:
-      '@dot-engine/core':
+      '@bigpuddle/dot-engine-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@dot-engine/renderer':
+      '@bigpuddle/dot-engine-renderer':
         specifier: workspace:*
         version: link:../renderer
       '@react-three/drei':
@@ -48,16 +48,16 @@ importers:
 
   packages/configurator:
     dependencies:
-      '@dot-engine/brand':
+      '@bigpuddle/dot-engine-brand':
         specifier: workspace:*
         version: link:../brand
-      '@dot-engine/core':
+      '@bigpuddle/dot-engine-core':
         specifier: workspace:*
         version: link:../core
-      '@dot-engine/export':
+      '@bigpuddle/dot-engine-export':
         specifier: workspace:*
         version: link:../export
-      '@dot-engine/renderer':
+      '@bigpuddle/dot-engine-renderer':
         specifier: workspace:*
         version: link:../renderer
       '@react-three/drei':
@@ -91,12 +91,27 @@ importers:
 
   packages/core: {}
 
-  packages/export:
+  packages/dot-engine:
     dependencies:
-      '@dot-engine/core':
+      '@bigpuddle/dot-engine-brand':
+        specifier: workspace:*
+        version: link:../brand
+      '@bigpuddle/dot-engine-core':
         specifier: workspace:*
         version: link:../core
-      '@dot-engine/renderer':
+      '@bigpuddle/dot-engine-export':
+        specifier: workspace:*
+        version: link:../export
+      '@bigpuddle/dot-engine-renderer':
+        specifier: workspace:*
+        version: link:../renderer
+
+  packages/export:
+    dependencies:
+      '@bigpuddle/dot-engine-core':
+        specifier: workspace:*
+        version: link:../core
+      '@bigpuddle/dot-engine-renderer':
         specifier: workspace:*
         version: link:../renderer
     devDependencies:
@@ -109,7 +124,7 @@ importers:
 
   packages/renderer:
     dependencies:
-      '@dot-engine/core':
+      '@bigpuddle/dot-engine-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

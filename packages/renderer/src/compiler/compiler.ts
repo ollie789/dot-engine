@@ -11,7 +11,7 @@ import type {
   SizeNode,
   SdfNode,
   ImageFieldNode,
-} from '@dot-engine/core';
+} from '@bigpuddle/dot-engine-core';
 import { collectSnippets } from './snippets.js';
 import { SMIN_GLSL } from './smin.glsl.js';
 import { SIMPLEX3D_GLSL } from './noise3d.glsl.js';

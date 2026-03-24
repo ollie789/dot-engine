@@ -1,4 +1,4 @@
-import type { ParticleNode, ParticleEmitter } from '@dot-engine/core';
+import type { ParticleNode, ParticleEmitter } from '@bigpuddle/dot-engine-core';
 
 export const PARTICLE_STRIDE = 8;
 // Layout per particle (8 floats):

@@ -3,7 +3,7 @@ import type {
   ShapeNode,
   GridNode,
   DisplaceNode,
-} from '@dot-engine/core';
+} from '@bigpuddle/dot-engine-core';
 import { collectWgslSnippets } from './wgsl-snippets.js';
 import { SIMPLEX3D_WGSL } from './noise3d.wgsl.js';
 import { CURL3D_WGSL } from './curl3d.wgsl.js';

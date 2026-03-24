@@ -1,5 +1,5 @@
 {
-  "name": "@dot-engine/configurator",
+  "name": "@bigpuddle/dot-engine-configurator",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,10 +7,10 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@dot-engine/core": "workspace:*",
-    "@dot-engine/renderer": "workspace:*",
-    "@dot-engine/brand": "workspace:*",
-    "@dot-engine/export": "workspace:*",
+    "@bigpuddle/dot-engine-core": "workspace:*",
+    "@bigpuddle/dot-engine-renderer": "workspace:*",
+    "@bigpuddle/dot-engine-brand": "workspace:*",
+    "@bigpuddle/dot-engine-export": "workspace:*",
     "@react-three/fiber": "^9.0.0",
     "@react-three/drei": "^10.0.0",
     "react": "^19.0.0",

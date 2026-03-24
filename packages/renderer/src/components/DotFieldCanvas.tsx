@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import type { FieldRoot } from '@dot-engine/core';
+import type { FieldRoot } from '@bigpuddle/dot-engine-core';
 import { DotField } from './DotField.js';
 import type { LodOverride } from './LodBenchmark.js';
 

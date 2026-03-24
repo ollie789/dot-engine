@@ -1,5 +1,5 @@
-import { field, shape, grid, animate, color, displace, attract } from '@dot-engine/core';
-import type { FieldChildNode, FieldRoot } from '@dot-engine/core';
+import { field, shape, grid, animate, color, displace, attract } from '@bigpuddle/dot-engine-core';
+import type { FieldChildNode, FieldRoot } from '@bigpuddle/dot-engine-core';
 import type { Brand, DataPoint, ContextOptions } from './types.js';
 import type { MappedParams } from './personality.js';
 

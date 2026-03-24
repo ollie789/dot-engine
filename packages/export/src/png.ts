@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import type { FieldRoot } from '@dot-engine/core';
-import { compileField } from '@dot-engine/renderer';
+import type { FieldRoot } from '@bigpuddle/dot-engine-core';
+import { compileField } from '@bigpuddle/dot-engine-renderer';
 
 export interface ExportPNGOptions {
   width: number;

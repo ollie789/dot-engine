@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { ColorSwatch } from './ColorSwatch';
 import { Slider } from './Slider';
-import { loadImageForField } from '@dot-engine/brand';
-import type { MotionStyle, ImageFieldData } from '@dot-engine/brand';
-import type { ParticleMode } from '@dot-engine/brand';
+import { loadImageForField } from '@bigpuddle/dot-engine-brand';
+import type { MotionStyle, ImageFieldData } from '@bigpuddle/dot-engine-brand';
+import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
 import { VIBES, type Vibe, type VibeSettings } from '../vibes';
 
 const FONTS = [

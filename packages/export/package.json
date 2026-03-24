@@ -1,6 +1,11 @@
 {
-  "name": "@dot-engine/export",
+  "name": "@bigpuddle/dot-engine-export",
   "version": "0.1.0",
+  "description": "Export utilities for dot-engine — SVG and PNG rendering from dot fields",
+  "license": "MIT",
+  "author": "bigpuddle",
+  "repository": { "type": "git", "url": "https://github.com/bigpuddle/dot-engine" },
+  "keywords": ["3d", "dots", "svg", "png", "export", "generative"],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,13 +16,14 @@
     }
   },
   "files": ["dist"],
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dot-engine/core": "workspace:*",
-    "@dot-engine/renderer": "workspace:*"
+    "@bigpuddle/dot-engine-core": "workspace:*",
+    "@bigpuddle/dot-engine-renderer": "workspace:*"
   },
   "peerDependencies": {
     "three": "^0.175.0"

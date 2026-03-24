@@ -1,4 +1,4 @@
-import { evaluateSdf } from '@dot-engine/core';
+import { evaluateSdf } from '@bigpuddle/dot-engine-core';
 import type {
   FieldRoot,
   ShapeNode,
@@ -6,7 +6,7 @@ import type {
   ColorNode,
   SizeNode,
   OpacityNode,
-} from '@dot-engine/core';
+} from '@bigpuddle/dot-engine-core';
 
 export interface ExportSVGOptions {
   width: number;

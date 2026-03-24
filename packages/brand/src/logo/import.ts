@@ -1,4 +1,4 @@
-import { textureSdf } from '@dot-engine/core';
+import { textureSdf } from '@bigpuddle/dot-engine-core';
 import { computeSignedDistance } from './edt.js';
 import { loadSvgToMask } from './svg-loader.js';
 import { loadImageToMask } from './image-loader.js';

@@ -1,0 +1,30 @@
+{
+  "name": "@bigpuddle/dot-engine",
+  "version": "0.1.0",
+  "description": "A 3D dot-field branding engine — turn any logo, text, or image into a living dot field",
+  "license": "MIT",
+  "author": "bigpuddle",
+  "repository": { "type": "git", "url": "https://github.com/bigpuddle/dot-engine" },
+  "keywords": ["3d", "dots", "branding", "sdf", "generative", "webgl", "react", "three"],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./core": { "types": "./dist/core.d.ts", "default": "./dist/core.js" },
+    "./renderer": { "types": "./dist/renderer.d.ts", "default": "./dist/renderer.js" },
+    "./brand": { "types": "./dist/brand.d.ts", "default": "./dist/brand.js" },
+    "./export": { "types": "./dist/export.d.ts", "default": "./dist/export.js" }
+  },
+  "files": ["dist"],
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@bigpuddle/dot-engine-core": "workspace:*",
+    "@bigpuddle/dot-engine-renderer": "workspace:*",
+    "@bigpuddle/dot-engine-brand": "workspace:*",
+    "@bigpuddle/dot-engine-export": "workspace:*"
+  }
+}

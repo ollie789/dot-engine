@@ -2,11 +2,11 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
-import type { Brand, BrandContext, ImageFieldData } from '@dot-engine/brand';
-import type { ParticleMode } from '@dot-engine/brand';
-import { imageField, shape, sphere } from '@dot-engine/core';
-import type { FieldRoot } from '@dot-engine/core';
+import { DotField, usePointerInfluence, ParticleSystem } from '@bigpuddle/dot-engine-renderer';
+import type { Brand, BrandContext, ImageFieldData } from '@bigpuddle/dot-engine-brand';
+import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
+import { imageField, shape, sphere } from '@bigpuddle/dot-engine-core';
+import type { FieldRoot } from '@bigpuddle/dot-engine-core';
 import type { OutputFormat } from '../formats';
 
 /**

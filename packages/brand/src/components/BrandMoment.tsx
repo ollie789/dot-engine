@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { DotFieldCanvas } from '@dot-engine/renderer';
-import type { LodOverride } from '@dot-engine/renderer';
+import { DotFieldCanvas } from '@bigpuddle/dot-engine-renderer';
+import type { LodOverride } from '@bigpuddle/dot-engine-renderer';
 import type { Brand, BrandContext, ContextOptions } from '../brand/types.js';
 
 export interface BrandMomentProps {

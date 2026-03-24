@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData } from '@dot-engine/brand';
+import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData } from '@bigpuddle/dot-engine-brand';
 import { TopBar } from './components/TopBar';
 import { Canvas3D, computeCanvasRect } from './components/Canvas3D';
 import { BottomBar } from './components/BottomBar';

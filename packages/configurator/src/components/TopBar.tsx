@@ -1,5 +1,5 @@
 import React from 'react';
-import type { BrandContext } from '@dot-engine/brand';
+import type { BrandContext } from '@bigpuddle/dot-engine-brand';
 import type { OutputFormat } from '../formats';
 
 const ALL_CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner', 'data'];

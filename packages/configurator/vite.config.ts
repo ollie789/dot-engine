@@ -10,10 +10,10 @@ export default defineConfig({
   server: { port: 3100, open: true },
   resolve: {
     alias: {
-      '@dot-engine/core': path.resolve(__dirname, '../core/src/index.ts'),
-      '@dot-engine/renderer': path.resolve(__dirname, '../renderer/src/index.ts'),
-      '@dot-engine/brand': path.resolve(__dirname, '../brand/src/index.ts'),
-      '@dot-engine/export': path.resolve(__dirname, '../export/src/index.ts'),
+      '@bigpuddle/dot-engine-core': path.resolve(__dirname, '../core/src/index.ts'),
+      '@bigpuddle/dot-engine-renderer': path.resolve(__dirname, '../renderer/src/index.ts'),
+      '@bigpuddle/dot-engine-brand': path.resolve(__dirname, '../brand/src/index.ts'),
+      '@bigpuddle/dot-engine-export': path.resolve(__dirname, '../export/src/index.ts'),
     },
   },
 });

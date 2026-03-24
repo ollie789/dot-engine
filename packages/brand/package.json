@@ -1,6 +1,11 @@
 {
-  "name": "@dot-engine/brand",
+  "name": "@bigpuddle/dot-engine-brand",
   "version": "0.1.0",
+  "description": "Brand identity layer for dot-engine — defineBrand, logo import, personality, contexts, particles",
+  "license": "MIT",
+  "author": "bigpuddle",
+  "repository": { "type": "git", "url": "https://github.com/bigpuddle/dot-engine" },
+  "keywords": ["branding", "logo", "identity", "3d", "dots", "generative"],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,21 +13,22 @@
     ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
   },
   "files": ["dist"],
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@dot-engine/core": "workspace:*"
+    "@bigpuddle/dot-engine-core": "workspace:*"
   },
   "peerDependencies": {
-    "@dot-engine/renderer": "^0.1.0",
+    "@bigpuddle/dot-engine-renderer": "^0.1.0",
     "@react-three/fiber": "^9.0.0",
     "react": "^19.0.0",
     "three": "^0.175.0"
   },
   "devDependencies": {
-    "@dot-engine/renderer": "workspace:*",
+    "@bigpuddle/dot-engine-renderer": "workspace:*",
     "@react-three/fiber": "^9.5.0",
     "@react-three/drei": "^10.7.7",
     "@types/react": "^19.2.14",
