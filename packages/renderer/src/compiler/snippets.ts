@@ -99,6 +99,18 @@ function emitNode(node: SdfNode, out: Map<string, GlslSnippet>): string {
       break;
     }
 
+    case 'textureSdf': {
+      const tid = node.textureId;
+      body = [
+        `  vec2 uv = vec2(p.x * ${f(node.aspectRatio)}, p.y) * 0.5 + 0.5;`,
+        `  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;`,
+        `  float d2d = texture2D(uLogoSDF_${tid}, uv).r;`,
+        `  float dz = abs(p.z) - ${f(node.depth * 0.5)};`,
+        `  return max(d2d, dz);`,
+      ].join('\n');
+      break;
+    }
+
     // Boolean nodes
     case 'union': {
       const aFn = emitNode(node.a, out);

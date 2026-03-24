@@ -99,6 +99,18 @@ function emitNode(node: SdfNode, out: Map<string, WgslSnippet>): string {
       break;
     }
 
+    case 'textureSdf': {
+      const tid = node.textureId;
+      body = [
+        `  let uv = vec2f(p.x * ${f(node.aspectRatio)}, p.y) * 0.5 + 0.5;`,
+        `  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { return 1.0; }`,
+        `  let d2d = textureSample(uLogoSDF_${tid}, uLogoSampler_${tid}, uv).r;`,
+        `  let dz = abs(p.z) - ${f(node.depth * 0.5)};`,
+        `  return max(d2d, dz);`,
+      ].join('\n');
+      break;
+    }
+
     // Boolean nodes
     case 'union': {
       const aFn = emitNode(node.a, out);
