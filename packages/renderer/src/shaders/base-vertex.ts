@@ -6,6 +6,8 @@ varying vec3 vPosition;
 uniform float uTime;
 uniform vec3 uResolution;
 uniform vec3 uBounds;
+uniform vec2 uPointer;
+uniform float uPointerStrength;
 
 {{NOISE_FUNCTIONS}}
 
@@ -25,6 +27,15 @@ void main() {
   vec3 gridPos = indexToGrid(gl_InstanceID, uResolution, uBounds);
   vec3 displaced = gridPos;
 {{DISPLACEMENT}}
+  // Pointer influence (optional)
+  if (uPointerStrength > 0.0) {
+    vec3 pointerWorld = vec3(uPointer.x, uPointer.y, 0.0) * uBounds * 0.5;
+    vec3 toPointer = displaced - pointerWorld;
+    float dist = length(toPointer);
+    if (dist > 0.01) {
+      displaced += normalize(toPointer) * uPointerStrength * 0.1 / max(dist * dist, 0.1);
+    }
+  }
   float d = {{SDF_ROOT}}(displaced);
   float edgeSoftness = 0.05;
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);

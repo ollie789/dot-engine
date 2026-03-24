@@ -11,6 +11,10 @@ export interface DotFieldProps {
   colorAccent?: string;
   lod?: 'auto' | LodOverride;
   backend?: 'auto' | 'webgl2' | 'webgpu';
+  /** Pointer position in NDC (-1 to 1). Use with usePointerInfluence hook. */
+  pointerPosition?: { x: number; y: number };
+  /** Pointer repulsion strength 0-1. Default 0. */
+  pointerStrength?: number;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -30,6 +34,8 @@ export function DotField({
   colorAccent = '#ff6b4a',
   lod = 'auto',
   backend = 'auto',
+  pointerPosition,
+  pointerStrength,
 }: DotFieldProps) {
   // WebGPU detection and stub
   const useWebGpu =
@@ -89,6 +95,8 @@ export function DotField({
         uBounds: { value: new THREE.Vector3(...compiled.bounds) },
         uColorPrimary: { value: hexToVec3(colorPrimary) },
         uColorAccent: { value: hexToVec3(colorAccent) },
+        uPointer: { value: new THREE.Vector2(0, 0) },
+        uPointerStrength: { value: 0 },
       },
       transparent: true,
       depthWrite: false,
@@ -102,6 +110,10 @@ export function DotField({
 
   useFrame(({ clock }) => {
     material.uniforms.uTime.value = clock.elapsedTime * animateSpeed;
+    if (pointerPosition) {
+      material.uniforms.uPointer.value.set(pointerPosition.x, pointerPosition.y);
+    }
+    material.uniforms.uPointerStrength.value = pointerStrength ?? 0;
   });
 
   return (
