@@ -8,6 +8,7 @@ uniform vec3 uResolution;
 uniform vec3 uBounds;
 uniform vec2 uPointer;
 uniform float uPointerStrength;
+{{EXTRA_UNIFORMS}}
 
 {{NOISE_FUNCTIONS}}
 

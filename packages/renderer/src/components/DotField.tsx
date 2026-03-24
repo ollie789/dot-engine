@@ -15,6 +15,8 @@ export interface DotFieldProps {
   pointerPosition?: { x: number; y: number };
   /** Pointer repulsion strength 0-1. Default 0. */
   pointerStrength?: number;
+  /** Texture uniforms for TextureSdf nodes, keyed by textureId. */
+  textures?: Record<string, { texture: THREE.DataTexture; depth: number; aspectRatio: number }>;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -36,6 +38,7 @@ export function DotField({
   backend = 'auto',
   pointerPosition,
   pointerStrength,
+  textures,
 }: DotFieldProps) {
   // WebGPU detection and stub
   const useWebGpu =
@@ -97,22 +100,35 @@ export function DotField({
   );
 
   const material = useMemo(() => {
+    const uniforms: Record<string, { value: unknown }> = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector3(...compiled.resolution) },
+      uBounds: { value: new THREE.Vector3(...compiled.bounds) },
+      uColorPrimary: { value: hexToVec3(colorPrimary) },
+      uColorAccent: { value: hexToVec3(colorAccent) },
+      uPointer: { value: new THREE.Vector2(0, 0) },
+      uPointerStrength: { value: 0 },
+    };
+
+    if (textures && compiled.extraUniforms) {
+      for (const [tid] of Object.entries(compiled.extraUniforms)) {
+        const tex = textures[tid];
+        if (tex) {
+          uniforms[`uLogoSDF_${tid}`] = { value: tex.texture };
+          uniforms[`uLogoDepth_${tid}`] = { value: tex.depth };
+          uniforms[`uLogoAspect_${tid}`] = { value: tex.aspectRatio };
+        }
+      }
+    }
+
     return new THREE.ShaderMaterial({
       vertexShader: compiled.vertexShader,
       fragmentShader: compiled.fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uResolution: { value: new THREE.Vector3(...compiled.resolution) },
-        uBounds: { value: new THREE.Vector3(...compiled.bounds) },
-        uColorPrimary: { value: hexToVec3(colorPrimary) },
-        uColorAccent: { value: hexToVec3(colorAccent) },
-        uPointer: { value: new THREE.Vector2(0, 0) },
-        uPointerStrength: { value: 0 },
-      },
+      uniforms,
       transparent: true,
       depthWrite: false,
     });
-  }, [compiled, colorPrimary, colorAccent]);
+  }, [compiled, colorPrimary, colorAccent, textures]);
 
   const geometry = useMemo(
     () => geometryForComplexity(lodTier.dotComplexity),

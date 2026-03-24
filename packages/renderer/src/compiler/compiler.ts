@@ -8,6 +8,7 @@ import type {
   NoiseColorNode,
   ColorFieldNode,
   OpacityNode,
+  SdfNode,
 } from '@dot-engine/core';
 import { collectSnippets } from './snippets.js';
 import { SMIN_GLSL } from './smin.glsl.js';
@@ -16,12 +17,18 @@ import { CURL3D_GLSL } from './curl3d.glsl.js';
 import { BASE_VERTEX } from '../shaders/base-vertex.js';
 import { BASE_FRAGMENT } from '../shaders/base-fragment.js';
 
+export interface ExtraUniform {
+  type: 'sampler2D' | 'float';
+  declaration: string;
+}
+
 export interface CompiledField {
   vertexShader: string;
   fragmentShader: string;
   resolution: [number, number, number];
   bounds: [number, number, number];
   totalDots: number;
+  extraUniforms: Record<string, ExtraUniform>;
 }
 
 /** Format a number for GLSL — always include a decimal point. */
@@ -191,6 +198,23 @@ function compileOpacityExpr(opacityNode: OpacityNode | undefined): string {
   }
 }
 
+function collectTextureUniforms(node: SdfNode, out: Record<string, ExtraUniform>): void {
+  if (node.type === 'textureSdf') {
+    const tid = node.textureId;
+    if (!out[tid]) {
+      out[tid] = {
+        type: 'sampler2D',
+        declaration: `uniform sampler2D uLogoSDF_${tid};\nuniform float uLogoDepth_${tid};\nuniform float uLogoAspect_${tid};`,
+      };
+    }
+    return;
+  }
+  // Recurse into boolean children
+  if ('a' in node) collectTextureUniforms((node as any).a, out);
+  if ('b' in node) collectTextureUniforms((node as any).b, out);
+  if ('child' in node) collectTextureUniforms((node as any).child, out);
+}
+
 export function compileField(root: FieldRoot): CompiledField {
   // Extract ShapeNode and GridNode from children
   const shapeNode = root.children.find((c): c is ShapeNode => c.type === 'shape');
@@ -215,6 +239,15 @@ export function compileField(root: FieldRoot): CompiledField {
   const opacityNode = root.children.find(
     (c): c is OpacityNode => c.type === 'opacity',
   ) as OpacityNode | undefined;
+
+  // Collect texture uniforms from SDF tree
+  const extraUniforms: Record<string, ExtraUniform> = {};
+  collectTextureUniforms(shapeNode.sdf, extraUniforms);
+
+  // Build extra uniform declarations string
+  const extraUniformsCode = Object.values(extraUniforms)
+    .map((u) => u.declaration)
+    .join('\n');
 
   // Compile the SDF tree to GLSL snippets
   const { root: rootFn, snippets } = collectSnippets(shapeNode.sdf);
@@ -245,6 +278,7 @@ export function compileField(root: FieldRoot): CompiledField {
 
   // Assemble vertex shader by replacing template placeholders
   const vertexShader = BASE_VERTEX
+    .replace('{{EXTRA_UNIFORMS}}', extraUniformsCode)
     .replace('{{NOISE_FUNCTIONS}}', noiseFunctions)
     .replace('{{SDF_FUNCTIONS}}', sdfFunctions)
     .replace('{{SDF_ROOT}}', rootFn)
@@ -274,5 +308,6 @@ export function compileField(root: FieldRoot): CompiledField {
     resolution,
     bounds,
     totalDots,
+    extraUniforms,
   };
 }
