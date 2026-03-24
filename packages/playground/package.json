@@ -9,6 +9,7 @@
   "dependencies": {
     "@dot-engine/core": "workspace:*",
     "@dot-engine/renderer": "workspace:*",
+    "@dot-engine/brand": "workspace:*",
     "@react-three/fiber": "^9.0.0",
     "@react-three/drei": "^10.0.0",
     "react": "^19.0.0",
