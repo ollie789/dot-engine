@@ -165,7 +165,7 @@ function findOpacity(root: FieldRoot): OpacityNode | undefined {
 
 function generateGridPositions(gridNode: GridNode): [number, number, number][] {
   const [rx, ry, rz] = gridNode.resolution;
-  const bounds = gridNode.bounds ?? [1, 1, 1];
+  const bounds = gridNode.bounds ?? [2, 2, 2];
   const [bx, by, bz] = bounds;
 
   const positions: [number, number, number][] = [];
@@ -173,10 +173,13 @@ function generateGridPositions(gridNode: GridNode): [number, number, number][] {
   for (let iz = 0; iz < rz; iz++) {
     for (let iy = 0; iy < ry; iy++) {
       for (let ix = 0; ix < rx; ix++) {
-        // Map from [0, res-1] to [-bound, +bound]
-        const x = rx > 1 ? ((ix / (rx - 1)) * 2 - 1) * bx : 0;
-        const y = ry > 1 ? ((iy / (ry - 1)) * 2 - 1) * by : 0;
-        const z = rz > 1 ? ((iz / (rz - 1)) * 2 - 1) * bz : 0;
+        // Match GPU shader formula: (n - 0.5) * bounds where n = i / (res - 1) in [0, 1]
+        const nx = rx > 1 ? ix / (rx - 1) : 0.5;
+        const ny = ry > 1 ? iy / (ry - 1) : 0.5;
+        const nz = rz > 1 ? iz / (rz - 1) : 0.5;
+        const x = (nx - 0.5) * bx;
+        const y = (ny - 0.5) * by;
+        const z = (nz - 0.5) * bz;
         positions.push([x, y, z]);
       }
     }
