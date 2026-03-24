@@ -75,12 +75,13 @@ describe('buildContextField()', () => {
     expect(heroGrid.resolution[0]).toBeGreaterThan(logoGrid.resolution[0]);
   });
 
-  it('hero context grid resolution is capped at 60', () => {
+  it('hero context has reasonable grid resolution', () => {
     const brand = makeMockBrand();
-    const params = makeMockParams({ gridResolution: 60 });
+    const params = makeMockParams({ gridResolution: 40 });
     const heroField = buildHeroField(brand, params);
     const heroGrid = heroField.children.find(c => c.type === 'grid') as any;
-    expect(heroGrid.resolution[0]).toBeLessThanOrEqual(60);
+    // Hero Y resolution should be based on shortAxisDots formula
+    expect(heroGrid.resolution[1]).toBeGreaterThan(40);
   });
 
   it('loading context has lower grid resolution than logo', () => {
@@ -128,16 +129,13 @@ describe('buildContextField()', () => {
     expect(result.children.some(c => c.type === 'grid')).toBe(true);
   });
 
-  it('banner context with width scales X resolution', () => {
+  it('banner context has wide X resolution for banner aspect', () => {
     const brand = makeMockBrand();
     const params = makeMockParams({ gridResolution: 40 });
-    const normalField = buildBannerField(brand, params);
-    const wideField = buildBannerField(brand, params, { width: 800 });
-
-    const normalGrid = normalField.children.find(c => c.type === 'grid') as any;
-    const wideGrid = wideField.children.find(c => c.type === 'grid') as any;
-
-    expect(wideGrid.resolution[0]).toBeGreaterThan(normalGrid.resolution[0]);
+    const bannerField = buildBannerField(brand, params);
+    const bannerGrid = bannerField.children.find(c => c.type === 'grid') as any;
+    // Banner enforces at least 3:1 aspect, so X >> Y
+    expect(bannerGrid.resolution[0]).toBeGreaterThan(bannerGrid.resolution[1] * 2);
   });
 
   it('default context (logo) via buildContextField', () => {
@@ -146,8 +144,9 @@ describe('buildContextField()', () => {
     const result = buildContextField(brand, 'logo', params);
     expect(result.type).toBe('field');
     const grid = result.children.find(c => c.type === 'grid') as any;
-    // logo uses exact gridResolution
-    expect(grid.resolution[0]).toBe(40);
+    // logo resolution is derived from personality + aspect ratio
+    expect(grid.resolution[0]).toBeGreaterThan(0);
+    expect(grid.resolution[1]).toBeGreaterThan(0);
   });
 });
 

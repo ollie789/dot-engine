@@ -200,8 +200,14 @@ function compileOpacityExpr(opacityNode: OpacityNode | undefined): string {
   }
 }
 
-function compileSizeExpr(sizeNode: SizeNode | undefined): string {
-  if (!sizeNode) return '0.02';
+function compileSizeExpr(sizeNode: SizeNode | undefined, resolution: [number, number, number], bounds: [number, number, number]): string {
+  if (!sizeNode) {
+    // Auto-scale dot size: bounds / resolution gives cell spacing, dots should be ~40% of cell
+    const avgRes = (resolution[0] + resolution[1] + resolution[2]) / 3;
+    const avgBounds = (bounds[0] + bounds[1] + bounds[2]) / 3;
+    const autoSize = (avgBounds / avgRes) * 0.4;
+    return f(Math.max(0.002, Math.min(0.05, autoSize)));
+  }
   const min = f(sizeNode.min);
   const max = f(sizeNode.max);
   switch (sizeNode.mode) {
@@ -279,6 +285,11 @@ export function compileField(root: FieldRoot): CompiledField {
     throw new Error('compileField: FieldRoot must contain a GridNode child');
   }
 
+  // Extract grid metadata early (needed by size expr)
+  const resolution = gridNode.resolution;
+  const bounds: [number, number, number] = gridNode.bounds ?? [2, 2, 2];
+  const totalDots = resolution[0] * resolution[1] * resolution[2];
+
   // Extract DisplaceNodes in declaration order
   const displaceNodes = root.children.filter((c): c is DisplaceNode => c.type === 'displace');
 
@@ -346,7 +357,7 @@ export function compileField(root: FieldRoot): CompiledField {
   const displacementLines = displaceNodes.map(emitDisplacement).join('\n');
 
   // Compile size expression
-  const sizeExpr = compileSizeExpr(sizeNode);
+  const sizeExpr = compileSizeExpr(sizeNode, resolution, bounds);
 
   // Emit image field GLSL code
   const imageFieldCode = imageFieldNode ? emitImageFieldVertex(imageFieldNode) : '';
@@ -386,11 +397,6 @@ export function compileField(root: FieldRoot): CompiledField {
     .replace('{{FRAGMENT_FUNCTIONS}}', fragmentFunctions)
     .replace('{{COLOR_LOGIC}}', colorLogic)
     .replace('{{OPACITY_EXPR}}', opacityExpr);
-
-  // Extract grid metadata
-  const resolution = gridNode.resolution;
-  const bounds: [number, number, number] = gridNode.bounds ?? [2, 2, 2];
-  const totalDots = resolution[0] * resolution[1] * resolution[2];
 
   return {
     vertexShader,
