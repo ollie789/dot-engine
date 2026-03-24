@@ -20,6 +20,7 @@ export interface ContextOptions {
   from?: BrandContext;
   to?: BrandContext;
   progress?: number;
+  canvasAspect?: number;  // canvas width/height ratio for grid adaptation
 }
 
 export interface BrandConfig {

@@ -11,15 +11,15 @@ export function buildContextField(
   options?: ContextOptions,
 ): FieldRoot {
   switch (context) {
-    case 'logo': return buildLogoField(brand, params);
-    case 'hero': return buildHeroField(brand, params);
+    case 'logo': return buildLogoField(brand, params, options);
+    case 'hero': return buildHeroField(brand, params, options);
     case 'loading': return buildLoadingField(brand, params);
     case 'banner': return buildBannerField(brand, params, options);
-    default: return buildLogoField(brand, params);
+    default: return buildLogoField(brand, params, options);
   }
 }
 
-export function buildLogoField(brand: Brand, params: MappedParams): FieldRoot {
+export function buildLogoField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
   const speed = brand.config.motion.speed * params.animateSpeed;
   const aspect = brand.logo.aspectRatio;
 
@@ -32,9 +32,18 @@ export function buildLogoField(brand: Brand, params: MappedParams): FieldRoot {
   const rz = Math.max(4, Math.round(shortAxisDots * 0.15)); // very thin Z for flat logos
 
   // Bounds match the aspect ratio — centered at origin
-  const bx = Math.max(1, aspect);
+  let bx = Math.max(1, aspect);
   const by = 1;
   const bz = 0.3;
+
+  // Adapt grid bounds to canvas aspect ratio so dots fill the visible area
+  if (options?.canvasAspect && options.canvasAspect > 0) {
+    const gridAspect = bx / by;
+    if (options.canvasAspect > gridAspect) {
+      // Canvas is wider than grid — extend X
+      bx = by * options.canvasAspect;
+    }
+  }
 
   const children: FieldChildNode[] = [
     shape(brand.logo.sdfNode),
@@ -46,14 +55,23 @@ export function buildLogoField(brand: Brand, params: MappedParams): FieldRoot {
   return field(...children);
 }
 
-export function buildHeroField(brand: Brand, params: MappedParams): FieldRoot {
+export function buildHeroField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
   const speed = brand.config.motion.speed * params.animateSpeed * 0.5;
   const aspect = brand.logo.aspectRatio;
   const shortAxisDots = Math.round(40 + params.gridResolution * 0.8);
   const rx = Math.round(shortAxisDots * Math.max(1, aspect));
   const ry = shortAxisDots;
   const rz = Math.max(6, Math.round(shortAxisDots * 0.2));
-  const bx = Math.max(1, aspect);
+  let bx = Math.max(1, aspect);
+
+  // Adapt grid bounds to canvas aspect ratio
+  if (options?.canvasAspect && options.canvasAspect > 0) {
+    const gridAspect = bx / 1;
+    if (options.canvasAspect > gridAspect) {
+      bx = options.canvasAspect;
+    }
+  }
+
   const children: FieldChildNode[] = [
     shape(brand.logo.sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, 2, 0.5] }),
