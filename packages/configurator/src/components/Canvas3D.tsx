@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
@@ -7,6 +7,7 @@ import type { Brand, BrandContext, ParticlePresetName, ImageFieldData } from '@d
 import { particlePresets } from '@dot-engine/brand';
 import { imageField, shape, sphere } from '@dot-engine/core';
 import type { FieldRoot } from '@dot-engine/core';
+import type { OutputFormat } from '../formats';
 
 /**
  * Convert the brand's SDF Float32Array into a THREE.DataTexture
@@ -32,6 +33,50 @@ function createSdfTexture(
   return tex;
 }
 
+function useContainerSize(ref: React.RefObject<HTMLDivElement>) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    if (!ref.current) return;
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setSize({ width: Math.round(width), height: Math.round(height) });
+    });
+    ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, [ref]);
+  return size;
+}
+
+function computeCanvasRect(
+  containerW: number,
+  containerH: number,
+  format: OutputFormat,
+): { x: number; y: number; width: number; height: number } {
+  if (format.aspect === 0 || containerW === 0 || containerH === 0) {
+    return { x: 0, y: 0, width: containerW, height: containerH };
+  }
+
+  const containerAspect = containerW / containerH;
+  let width: number, height: number;
+
+  if (format.aspect > containerAspect) {
+    // Format is wider than container — fit to width
+    width = containerW;
+    height = Math.round(containerW / format.aspect);
+  } else {
+    // Format is taller — fit to height
+    height = containerH;
+    width = Math.round(containerH * format.aspect);
+  }
+
+  return {
+    x: Math.round((containerW - width) / 2),
+    y: Math.round((containerH - height) / 2),
+    width,
+    height,
+  };
+}
+
 interface SceneProps {
   brand: Brand | null;
   activeContext: BrandContext;
@@ -40,13 +85,35 @@ interface SceneProps {
   colorAccent: string;
   particlePreset?: ParticlePresetName | 'none';
   imageData?: ImageFieldData | null;
+  effectiveAspect: number;
 }
 
-function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent, particlePreset, imageData }: SceneProps) {
+function Scene({
+  brand,
+  activeContext,
+  pointerEnabled,
+  colorPrimary,
+  colorAccent,
+  particlePreset,
+  imageData,
+  effectiveAspect,
+}: SceneProps) {
+  const { camera } = useThree();
   const pointer = usePointerInfluence({ smoothing: 0.85, enabled: pointerEnabled });
+
+  // Update camera aspect when effectiveAspect changes
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cam = camera as any;
+    if (typeof cam.aspect !== 'undefined') {
+      cam.aspect = effectiveAspect;
+      cam.updateProjectionMatrix();
+    }
+  }, [camera, effectiveAspect]);
+
   const baseFieldRoot = useMemo(
-    () => (brand ? brand.field(activeContext) : null),
-    [brand, activeContext],
+    () => (brand ? brand.field(activeContext, { canvasAspect: effectiveAspect }) : null),
+    [brand, activeContext, effectiveAspect],
   );
 
   // When imageData is present, inject an imageField node into the field children
@@ -134,6 +201,7 @@ export interface Canvas3DProps {
   isLoading?: boolean;
   particlePreset?: ParticlePresetName | 'none';
   imageData?: ImageFieldData | null;
+  format: OutputFormat;
 }
 
 export function Canvas3D({
@@ -145,19 +213,21 @@ export function Canvas3D({
   isLoading,
   particlePreset,
   imageData,
+  format,
 }: Canvas3DProps) {
+  const containerRef = useRef<HTMLDivElement>(null!);
+  const containerSize = useContainerSize(containerRef);
+  const canvasRect = computeCanvasRect(containerSize.width, containerSize.height, format);
+
+  // The effective aspect ratio for the camera
+  const effectiveAspect = format.aspect > 0
+    ? format.aspect
+    : containerSize.width / Math.max(containerSize.height, 1);
+
   return (
-    <div className="canvas-wrapper">
-      {/* HUD corner brackets */}
-      <div className="hud-corner tl" />
-      <div className="hud-corner tr" />
-      <div className="hud-corner bl" />
-      <div className="hud-corner br" />
-
-      {/* Crosshair */}
-      <div className="hud-crosshair" />
-
-      <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+    <div ref={containerRef} className="canvas-wrapper">
+      {/* R3F canvas fills entire wrapper — overflow dots visible */}
+      <Canvas camera={{ position: [0, 0, 3], fov: 50, aspect: effectiveAspect }}>
         <Scene
           brand={brand}
           activeContext={activeContext}
@@ -166,8 +236,63 @@ export function Canvas3D({
           colorAccent={colorAccent}
           particlePreset={particlePreset}
           imageData={imageData}
+          effectiveAspect={effectiveAspect}
         />
       </Canvas>
+
+      {/* Format frame overlay — only shown when aspect is locked */}
+      {format.aspect > 0 && containerSize.width > 0 && (
+        <>
+          {/* Dark overlay outside the frame */}
+          <div className="frame-overlay-top" style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            height: canvasRect.y,
+            background: 'rgba(6, 6, 10, 0.7)',
+            pointerEvents: 'none', zIndex: 15,
+          }} />
+          <div className="frame-overlay-bottom" style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: containerSize.height - canvasRect.y - canvasRect.height,
+            background: 'rgba(6, 6, 10, 0.7)',
+            pointerEvents: 'none', zIndex: 15,
+          }} />
+          <div className="frame-overlay-left" style={{
+            position: 'absolute', top: canvasRect.y, left: 0,
+            width: canvasRect.x,
+            height: canvasRect.height,
+            background: 'rgba(6, 6, 10, 0.7)',
+            pointerEvents: 'none', zIndex: 15,
+          }} />
+          <div className="frame-overlay-right" style={{
+            position: 'absolute', top: canvasRect.y, right: 0,
+            width: containerSize.width - canvasRect.x - canvasRect.width,
+            height: canvasRect.height,
+            background: 'rgba(6, 6, 10, 0.7)',
+            pointerEvents: 'none', zIndex: 15,
+          }} />
+
+          {/* Frame border — glowing HUD line */}
+          <div className="frame-border" style={{
+            position: 'absolute',
+            top: canvasRect.y,
+            left: canvasRect.x,
+            width: canvasRect.width,
+            height: canvasRect.height,
+            border: '1px solid rgba(74, 158, 255, 0.2)',
+            boxShadow: '0 0 8px rgba(74, 158, 255, 0.1)',
+            pointerEvents: 'none',
+            zIndex: 16,
+          }} />
+        </>
+      )}
+
+      {/* HUD corners — inside the frame when locked, or full canvas when responsive */}
+      <div className="hud-corner tl" style={format.aspect > 0 ? { top: canvasRect.y + 12, left: canvasRect.x + 12 } : undefined} />
+      <div className="hud-corner tr" style={format.aspect > 0 ? { top: canvasRect.y + 12, right: containerSize.width - canvasRect.x - canvasRect.width + 12 } : undefined} />
+      <div className="hud-corner bl" style={format.aspect > 0 ? { bottom: containerSize.height - canvasRect.y - canvasRect.height + 12, left: canvasRect.x + 12 } : undefined} />
+      <div className="hud-corner br" style={format.aspect > 0 ? { bottom: containerSize.height - canvasRect.y - canvasRect.height + 12, right: containerSize.width - canvasRect.x - canvasRect.width + 12 } : undefined} />
+
+      <div className="hud-crosshair" />
 
       {isLoading && (
         <div style={{
@@ -189,3 +314,6 @@ export function Canvas3D({
     </div>
   );
 }
+
+// Export computeCanvasRect for use in parent components (e.g. for dimension display)
+export { computeCanvasRect };
