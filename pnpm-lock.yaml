@@ -17,6 +17,15 @@ importers:
 
   packages/core: {}
 
+  packages/export:
+    dependencies:
+      '@dot-engine/core':
+        specifier: workspace:*
+        version: link:../core
+      three:
+        specifier: ^0.175.0
+        version: 0.175.0
+
   packages/playground:
     dependencies:
       '@dot-engine/core':
