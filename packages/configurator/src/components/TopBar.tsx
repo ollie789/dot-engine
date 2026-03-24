@@ -1,85 +1,34 @@
-import React, { useRef } from 'react';
-import type { BrandContext, ImageFieldData } from '@dot-engine/brand';
-import { loadImageForField } from '@dot-engine/brand';
+import React from 'react';
+import type { BrandContext } from '@dot-engine/brand';
 import type { OutputFormat } from '../formats';
 
 const ALL_CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner', 'data'];
 
-const FONTS = [
-  { value: 'system-ui', label: 'system-ui' },
-  { value: 'Inter', label: 'Inter' },
-  { value: 'Space Grotesk', label: 'Space Grotesk' },
-  { value: 'JetBrains Mono', label: 'JetBrains Mono' },
-  { value: 'Playfair Display', label: 'Playfair Display' },
-  { value: 'serif', label: 'serif' },
-];
-
 export interface TopBarProps {
   name: string;
   setName: (n: string) => void;
-  logoMode: 'text' | 'file';
-  setLogoMode: (m: 'text' | 'file') => void;
-  logoFont: string;
-  setLogoFont: (f: string) => void;
   activeContext: BrandContext;
   setActiveContext: (c: BrandContext) => void;
-  dotCount?: number;
-  onImageLoad?: (data: ImageFieldData | null) => void;
-  imageResolution?: number;
-  setImageResolution?: (r: number) => void;
   formats: OutputFormat[];
   activeFormat: OutputFormat;
   setActiveFormat: (f: OutputFormat) => void;
   canvasWidth?: number;
   canvasHeight?: number;
+  dotCount?: number;
 }
 
 export function TopBar({
   name,
   setName,
-  logoMode,
-  setLogoMode,
-  logoFont,
-  setLogoFont,
   activeContext,
   setActiveContext,
-  dotCount,
-  onImageLoad,
-  imageResolution = 128,
-  setImageResolution,
   formats,
   activeFormat,
   setActiveFormat,
   canvasWidth,
   canvasHeight,
+  dotCount,
 }: TopBarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files.length > 0) {
-      setLogoMode('file');
-      // File import is complex — show coming soon
-      console.info('File logo import coming soon');
-    }
-  }
-
-  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    try {
-      const data = await loadImageForField(url, imageResolution);
-      onImageLoad?.(data);
-    } catch (err) {
-      console.error('Failed to load image for field:', err);
-    } finally {
-      URL.revokeObjectURL(url);
-      // Reset input so the same file can be re-selected
-      e.target.value = '';
-    }
-  }
-
   return (
     <div className="top-bar">
       <div className="pulse-dot" />
@@ -92,87 +41,6 @@ export function TopBar({
         spellCheck={false}
         aria-label="Brand name"
       />
-
-      {logoMode === 'text' && (
-        <select
-          className="font-select"
-          value={logoFont}
-          onChange={e => setLogoFont(e.target.value)}
-          aria-label="Logo font"
-        >
-          {FONTS.map(f => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
-      )}
-
-      <div className="logo-mode-group">
-        <button
-          className={`logo-mode-btn${logoMode === 'text' ? ' active' : ''}`}
-          onClick={() => setLogoMode('text')}
-          title="Text logo"
-          aria-label="Text logo mode"
-        >
-          T
-        </button>
-        <button
-          className={`logo-mode-btn${logoMode === 'file' ? ' active' : ''}`}
-          onClick={() => fileInputRef.current?.click()}
-          title="File logo"
-          aria-label="File logo mode"
-        >
-          ◻
-        </button>
-      </div>
-
-      <button
-        className="file-upload-btn"
-        onClick={() => fileInputRef.current?.click()}
-        title="Upload logo file"
-        aria-label="Upload logo file"
-      >
-        ↑
-      </button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".svg,.png,.jpg"
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
-      />
-
-      <button
-        className="file-upload-btn"
-        onClick={() => imageInputRef.current?.click()}
-        title="Load image as dots"
-        aria-label="Load image as dots"
-      >
-        ⬚
-      </button>
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept=".png,.jpg,.webp"
-        style={{ display: 'none' }}
-        onChange={handleImageChange}
-      />
-
-      {setImageResolution && (
-        <select
-          className="format-select"
-          value={imageResolution}
-          onChange={e => setImageResolution(Number(e.target.value))}
-          title="Image field resolution"
-          aria-label="Image field resolution"
-          style={{ width: 56 }}
-        >
-          {[64, 128, 256, 512].map(r => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
-      )}
 
       <div className="hud-separator" />
 
@@ -190,21 +58,19 @@ export function TopBar({
 
       <div className="hud-separator" />
 
-      <select
-        className="format-select"
-        value={activeFormat.name}
-        onChange={e => {
-          const fmt = formats.find(f => f.name === e.target.value);
-          if (fmt) setActiveFormat(fmt);
-        }}
-        aria-label="Output format"
-      >
+      {/* Format pills */}
+      <div className="format-pills">
         {formats.map(f => (
-          <option key={f.name} value={f.name}>
-            {f.icon} {f.label}
-          </option>
+          <button
+            key={f.name}
+            className={`format-pill${activeFormat.name === f.name ? ' active' : ''}`}
+            onClick={() => setActiveFormat(f)}
+            title={f.label}
+          >
+            {f.icon}
+          </button>
         ))}
-      </select>
+      </div>
 
       <div className="top-bar-meta">
         {activeFormat.aspect > 0 && canvasWidth && canvasHeight && (
@@ -219,7 +85,7 @@ export function TopBar({
           </div>
         )}
         <div className="meta-item">
-          <span className="meta-value">v0.8</span>
+          <span className="meta-value">v0.9</span>
         </div>
       </div>
     </div>

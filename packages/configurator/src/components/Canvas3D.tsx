@@ -3,8 +3,8 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
-import type { Brand, BrandContext, ParticlePresetName, ImageFieldData } from '@dot-engine/brand';
-import { particlePresets } from '@dot-engine/brand';
+import type { Brand, BrandContext, ImageFieldData } from '@dot-engine/brand';
+import type { ParticleMode } from '@dot-engine/brand';
 import { imageField, shape, sphere } from '@dot-engine/core';
 import type { FieldRoot } from '@dot-engine/core';
 import type { OutputFormat } from '../formats';
@@ -83,9 +83,10 @@ interface SceneProps {
   pointerEnabled: boolean;
   colorPrimary: string;
   colorAccent: string;
-  particlePreset?: ParticlePresetName | 'none';
+  particleMode?: ParticleMode;
   imageData?: ImageFieldData | null;
   effectiveAspect: number;
+  contextOptions?: Record<string, unknown>;
 }
 
 function Scene({
@@ -94,9 +95,10 @@ function Scene({
   pointerEnabled,
   colorPrimary,
   colorAccent,
-  particlePreset,
+  particleMode,
   imageData,
   effectiveAspect,
+  contextOptions,
 }: SceneProps) {
   const { camera } = useThree();
   const pointer = usePointerInfluence({ smoothing: 0.85, enabled: pointerEnabled });
@@ -112,8 +114,9 @@ function Scene({
   }, [camera, effectiveAspect]);
 
   const baseFieldRoot = useMemo(
-    () => (brand ? brand.field(activeContext, { canvasAspect: effectiveAspect }) : null),
-    [brand, activeContext, effectiveAspect],
+    () => (brand ? brand.field(activeContext, { canvasAspect: effectiveAspect, ...contextOptions }) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [brand, activeContext, effectiveAspect, contextOptions],
   );
 
   // When imageData is present, inject an imageField node into the field children
@@ -165,9 +168,12 @@ function Scene({
     return { [imageData.textureId]: tex };
   }, [imageData]);
 
-  const particleConfig = particlePreset && particlePreset !== 'none'
-    ? particlePresets[particlePreset]
-    : null;
+  const particleConfig = useMemo(
+    () => brand && particleMode && particleMode !== 'none'
+      ? brand.particles(particleMode)
+      : null,
+    [brand, particleMode],
+  );
 
   if (!fieldRoot) return null;
 
@@ -185,7 +191,7 @@ function Scene({
         imageTextures={imageTextures}
       />
       {particleConfig && (
-        <ParticleSystem config={particleConfig} color={colorPrimary} />
+        <ParticleSystem config={particleConfig} color={colorAccent} />
       )}
       <OrbitControls />
     </>
@@ -199,9 +205,10 @@ export interface Canvas3DProps {
   colorPrimary: string;
   colorAccent: string;
   isLoading?: boolean;
-  particlePreset?: ParticlePresetName | 'none';
+  particleMode?: ParticleMode;
   imageData?: ImageFieldData | null;
   format: OutputFormat;
+  contextOptions?: Record<string, unknown>;
 }
 
 export function Canvas3D({
@@ -211,9 +218,10 @@ export function Canvas3D({
   colorPrimary,
   colorAccent,
   isLoading,
-  particlePreset,
+  particleMode,
   imageData,
   format,
+  contextOptions,
 }: Canvas3DProps) {
   const containerRef = useRef<HTMLDivElement>(null!);
   const containerSize = useContainerSize(containerRef);
@@ -247,9 +255,10 @@ export function Canvas3D({
             pointerEnabled={pointerEnabled}
             colorPrimary={colorPrimary}
             colorAccent={colorAccent}
-            particlePreset={particlePreset}
+            particleMode={particleMode}
             imageData={imageData}
             effectiveAspect={effectiveAspect}
+            contextOptions={contextOptions}
           />
         </Canvas>
       </div>
