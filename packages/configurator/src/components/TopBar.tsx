@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import type { BrandContext } from '@dot-engine/brand';
+import type { BrandContext, ImageFieldData } from '@dot-engine/brand';
+import { loadImageForField } from '@dot-engine/brand';
 
 const ALL_CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner', 'data'];
 
@@ -22,6 +23,7 @@ export interface TopBarProps {
   activeContext: BrandContext;
   setActiveContext: (c: BrandContext) => void;
   dotCount?: number;
+  onImageLoad?: (data: ImageFieldData | null) => void;
 }
 
 export function TopBar({
@@ -34,14 +36,32 @@ export function TopBar({
   activeContext,
   setActiveContext,
   dotCount,
+  onImageLoad,
 }: TopBarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length > 0) {
       setLogoMode('file');
       // File import is complex — show coming soon
       console.info('File logo import coming soon');
+    }
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const data = await loadImageForField(url, 256);
+      onImageLoad?.(data);
+    } catch (err) {
+      console.error('Failed to load image for field:', err);
+    } finally {
+      URL.revokeObjectURL(url);
+      // Reset input so the same file can be re-selected
+      e.target.value = '';
     }
   }
 
@@ -106,6 +126,22 @@ export function TopBar({
         accept=".svg,.png,.jpg"
         style={{ display: 'none' }}
         onChange={handleFileChange}
+      />
+
+      <button
+        className="file-upload-btn"
+        onClick={() => imageInputRef.current?.click()}
+        title="Load image as dots"
+        aria-label="Load image as dots"
+      >
+        ⬚
+      </button>
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept=".png,.jpg,.webp"
+        style={{ display: 'none' }}
+        onChange={handleImageChange}
       />
 
       <div className="hud-separator" />

@@ -3,8 +3,10 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
-import type { Brand, BrandContext, ParticlePresetName } from '@dot-engine/brand';
+import type { Brand, BrandContext, ParticlePresetName, ImageFieldData } from '@dot-engine/brand';
 import { particlePresets } from '@dot-engine/brand';
+import { imageField } from '@dot-engine/core';
+import type { FieldRoot } from '@dot-engine/core';
 
 /**
  * Convert the brand's SDF Float32Array into a THREE.DataTexture
@@ -37,14 +39,26 @@ interface SceneProps {
   colorPrimary: string;
   colorAccent: string;
   particlePreset?: ParticlePresetName | 'none';
+  imageData?: ImageFieldData | null;
 }
 
-function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent, particlePreset }: SceneProps) {
+function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent, particlePreset, imageData }: SceneProps) {
   const pointer = usePointerInfluence({ smoothing: 0.85, enabled: pointerEnabled });
-  const fieldRoot = useMemo(
+  const baseFieldRoot = useMemo(
     () => (brand ? brand.field(activeContext) : null),
     [brand, activeContext],
   );
+
+  // When imageData is present, inject an imageField node into the field children
+  const fieldRoot = useMemo((): FieldRoot | null => {
+    if (!baseFieldRoot) return null;
+    if (!imageData) return baseFieldRoot;
+    const imgNode = imageField(imageData.textureId);
+    return {
+      ...baseFieldRoot,
+      children: [...baseFieldRoot.children, imgNode],
+    };
+  }, [baseFieldRoot, imageData]);
 
   // Build textures map from the brand's processed logo
   const textures = useMemo(() => {
@@ -58,6 +72,24 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
       },
     };
   }, [brand]);
+
+  // Build image field DataTexture when imageData is provided
+  const imageTextures = useMemo(() => {
+    if (!imageData) return undefined;
+    const tex = new THREE.DataTexture(
+      imageData.pixels,
+      imageData.width,
+      imageData.height,
+      THREE.RGBAFormat,
+      THREE.FloatType,
+    );
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+    return { [imageData.textureId]: tex };
+  }, [imageData]);
 
   const particleConfig = particlePreset && particlePreset !== 'none'
     ? particlePresets[particlePreset]
@@ -76,6 +108,7 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
         pointerPosition={pointerEnabled ? pointer.position : undefined}
         pointerStrength={pointerEnabled ? 0.4 : 0}
         textures={textures}
+        imageTextures={imageTextures}
       />
       {particleConfig && (
         <ParticleSystem config={particleConfig} color={colorPrimary} />
@@ -93,6 +126,7 @@ export interface Canvas3DProps {
   colorAccent: string;
   isLoading?: boolean;
   particlePreset?: ParticlePresetName | 'none';
+  imageData?: ImageFieldData | null;
 }
 
 export function Canvas3D({
@@ -103,6 +137,7 @@ export function Canvas3D({
   colorAccent,
   isLoading,
   particlePreset,
+  imageData,
 }: Canvas3DProps) {
   return (
     <div className="canvas-wrapper">
@@ -123,6 +158,7 @@ export function Canvas3D({
           colorPrimary={colorPrimary}
           colorAccent={colorAccent}
           particlePreset={particlePreset}
+          imageData={imageData}
         />
       </Canvas>
 

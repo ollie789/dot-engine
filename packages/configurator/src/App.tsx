@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { defineBrand, text, type Brand, type BrandContext } from '@dot-engine/brand';
+import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData } from '@dot-engine/brand';
 import type { MotionStyle, ParticlePresetName } from '@dot-engine/brand';
 import { TopBar } from './components/TopBar';
 import { Canvas3D } from './components/Canvas3D';
@@ -21,6 +21,7 @@ export function App() {
   const [particlePreset, setParticlePreset] = useState<ParticlePresetName | 'none'>('none');
   const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [imageData, setImageData] = useState<ImageFieldData | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -75,6 +76,7 @@ export function App() {
         setLogoFont={setLogoFont}
         activeContext={activeContext}
         setActiveContext={setActiveContext}
+        onImageLoad={setImageData}
       />
 
       <Canvas3D
@@ -85,6 +87,7 @@ export function App() {
         colorAccent={colorAccent}
         isLoading={isLoading}
         particlePreset={particlePreset}
+        imageData={imageData}
       />
 
       <BottomBar
