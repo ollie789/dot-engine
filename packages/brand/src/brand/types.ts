@@ -1,7 +1,9 @@
 import type { FieldRoot } from '@dot-engine/core';
+import type { ParticleNode } from '@dot-engine/core';
 import type { LogoInput, ProcessedLogo } from '../logo/types.js';
 import type { PersonalityTraits } from './personality.js';
 import type { MotionStyle } from './motion.js';
+import type { ParticleMode } from './particle-presets.js';
 
 export type BrandContext = 'logo' | 'hero' | 'loading' | 'banner' | 'data' | 'transition';
 
@@ -21,6 +23,15 @@ export interface ContextOptions {
   to?: BrandContext;
   progress?: number;
   canvasAspect?: number;  // canvas width/height ratio for grid adaptation
+  // Shape transforms
+  twist?: number;
+  bend?: number;
+  mirrorX?: boolean;
+  mirrorY?: boolean;
+  // Dot size overrides
+  dotSizeMin?: number;
+  dotSizeMax?: number;
+  edgeSoftness?: number;
 }
 
 export interface BrandConfig {
@@ -42,4 +53,5 @@ export interface Brand {
   config: BrandConfig;
   logo: ProcessedLogo;
   field(context?: BrandContext, options?: ContextOptions): FieldRoot;
+  particles(mode: ParticleMode): ParticleNode | null;
 }

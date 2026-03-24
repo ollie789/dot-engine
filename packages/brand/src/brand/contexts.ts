@@ -1,8 +1,17 @@
-import { field, shape, grid, animate, color } from '@dot-engine/core';
-import type { FieldChildNode, FieldRoot } from '@dot-engine/core';
+import { field, shape, grid, animate, color, size, twist, bend, mirror } from '@dot-engine/core';
+import type { FieldChildNode, FieldRoot, SdfNode } from '@dot-engine/core';
 import type { Brand, ContextOptions } from './types.js';
 import type { MappedParams } from './personality.js';
 import { motionToDisplacements } from './motion.js';
+
+function applyTransforms(sdf: SdfNode, options?: ContextOptions): SdfNode {
+  let result = sdf;
+  if (options?.twist) result = twist(result, options.twist);
+  if (options?.bend) result = bend(result, options.bend);
+  if (options?.mirrorX) result = mirror(result, 'x');
+  if (options?.mirrorY) result = mirror(result, 'y');
+  return result;
+}
 
 export function buildContextField(
   brand: Brand,
@@ -45,13 +54,17 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
     }
   }
 
+  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
   const children: FieldChildNode[] = [
-    shape(brand.logo.sdfNode),
+    shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, by * 2, bz * 2] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.5, params.useFlowField),
     animate({ speed }),
   ];
+  if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
+    children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
+  }
   return field(...children);
 }
 
@@ -72,13 +85,17 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
     }
   }
 
+  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
   const children: FieldChildNode[] = [
-    shape(brand.logo.sdfNode),
+    shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, 2, 0.5] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.8, params.useFlowField),
     animate({ speed }),
   ];
+  if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
+    children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
+  }
   return field(...children);
 }
 
@@ -96,6 +113,7 @@ export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot
   return field(...children);
 }
 
+
 export function buildBannerField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
   const speed = brand.config.motion.speed * params.animateSpeed;
   const aspect = brand.logo.aspectRatio;
@@ -105,12 +123,16 @@ export function buildBannerField(brand: Brand, params: MappedParams, options?: C
   const rx = Math.round(shortAxisDots * bannerAspect);
   const ry = shortAxisDots;
   const rz = Math.max(3, Math.round(shortAxisDots * 0.1));
+  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
   const children: FieldChildNode[] = [
-    shape(brand.logo.sdfNode),
+    shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bannerAspect * 2, 2, 0.3] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.4, params.useFlowField),
     animate({ speed }),
   ];
+  if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
+    children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
+  }
   return field(...children);
 }
