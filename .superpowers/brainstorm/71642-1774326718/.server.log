@@ -1,0 +1,5 @@
+{"type":"server-started","port":50593,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:50593","screen_dir":"/Users/oliver/Projects/dot-engine/.superpowers/brainstorm/71642-1774326718"}
+{"type":"screen-added","file":"/Users/oliver/Projects/dot-engine/.superpowers/brainstorm/71642-1774326718/configurator-layout.html"}
+{"type":"screen-added","file":"/Users/oliver/Projects/dot-engine/.superpowers/brainstorm/71642-1774326718/configurator-hud.html"}
+{"type":"screen-added","file":"/Users/oliver/Projects/dot-engine/.superpowers/brainstorm/71642-1774326718/configurator-hud-v2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

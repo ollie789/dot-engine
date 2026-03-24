@@ -9,8 +9,8 @@ function makeCircleMask(size: number, radius: number): Uint8Array {
     for (let x = 0; x < size; x++) {
       const dx = x - cx;
       const dy = y - cy;
-      // mask=1 means outside (distance from the shape)
-      mask[y * size + x] = Math.sqrt(dx * dx + dy * dy) > radius ? 1 : 0;
+      // mask=1 means inside the shape (matches loader convention)
+      mask[y * size + x] = Math.sqrt(dx * dx + dy * dy) <= radius ? 1 : 0;
     }
   }
   return mask;

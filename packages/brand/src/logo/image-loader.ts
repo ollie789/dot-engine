@@ -31,8 +31,8 @@ export function loadImageToMask(source: string, resolution: number): Promise<Mas
       const imageData = ctx.getImageData(0, 0, width, height);
       const mask = new Uint8Array(width * height);
       for (let i = 0; i < mask.length; i++) {
-        // Alpha channel at index i*4+3; mask=1 means outside (transparent)
-        mask[i] = imageData.data[i * 4 + 3] < 128 ? 1 : 0;
+        // mask=1 where content IS present (alpha > 128 = inside shape)
+        mask[i] = imageData.data[i * 4 + 3] > 128 ? 1 : 0;
       }
       resolve({ mask, width, height });
     };

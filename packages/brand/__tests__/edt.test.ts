@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { computeEDT, computeSignedDistance } from '../src/logo/edt.js';
 
 // Helper: circle mask for size x size grid
-// mask[i]=1 means "outside" (the EDT computes distance from 0-pixels to nearest 1-pixel)
+// mask[i]=1 means "inside the shape" (matches the loader convention)
 function makeCircle(size: number, radius: number): Uint8Array {
   const cx = size / 2;
   const cy = size / 2;
@@ -11,7 +11,7 @@ function makeCircle(size: number, radius: number): Uint8Array {
     for (let x = 0; x < size; x++) {
       const dx = x - cx;
       const dy = y - cy;
-      mask[y * size + x] = Math.sqrt(dx * dx + dy * dy) > radius ? 1 : 0;
+      mask[y * size + x] = Math.sqrt(dx * dx + dy * dy) <= radius ? 1 : 0;
     }
   }
   return mask;
@@ -79,21 +79,18 @@ describe('computeEDT', () => {
     }
   });
 
-  it('circle mask (32x32): center has distance > 0 (distance to outside edge)', () => {
-    // mask=1 means outside, mask=0 means inside
-    // EDT computes distance to nearest mask=0 pixel
-    // For mask=0 (inside) pixels, distance = 0
-    // For mask=1 (outside) pixels, distance = distance to nearest inside pixel
-    // But we want to know if the algorithm correctly handles a circle
-    // Let's use inverted: mask=0 inside circle, mask=1 outside
+  it('circle mask (32x32): EDT distances are correct', () => {
+    // mask=1 means inside the circle, mask=0 means outside
+    // EDT computes distance from each pixel to nearest mask=0 pixel
+    // Inside pixels (mask=1) start at Infinity → get distance to nearest outside pixel
+    // Outside pixels (mask=0) start at 0 → stay at 0
     const mask = makeCircle(32, 10);
     const result = computeEDT(mask, 32, 32);
-    // Center (16,16) is inside (mask=0), distance = 0
+    // Corner (0,0) is outside (mask=0), distance = 0
+    expect(result[0]).toBe(0);
+    // Center (16,16) is inside (mask=1), distance to nearest outside pixel > 0
     const cx = 16, cy = 16;
-    expect(result[cy * 32 + cx]).toBe(0);
-    // Corner (0,0) is outside (mask=1), nearest inside is about sqrt(2)*6 = radius - sqrt(16^2+16^2)
-    // Actually corner is ~22.6 from center, radius=10, so distance = 22.6-10 = 12.6 approx
-    expect(result[0]).toBeGreaterThan(10);
+    expect(result[cy * 32 + cx]).toBeGreaterThan(5);
   });
 });
 
@@ -105,8 +102,8 @@ describe('computeSignedDistance', () => {
     expect(result.length).toBe(32 * 32);
   });
 
-  it('negative inside the shape (mask=0 region)', () => {
-    // mask[i]=0 means inside the shape
+  it('negative inside the shape (mask=1 region)', () => {
+    // mask[i]=1 means inside the shape
     // SDF should be negative inside
     const mask = makeCircle(32, 10);
     const sdf = computeSignedDistance(mask, 32, 32);
@@ -115,7 +112,7 @@ describe('computeSignedDistance', () => {
     expect(centerVal).toBeLessThan(0);
   });
 
-  it('positive outside the shape (mask=1 region)', () => {
+  it('positive outside the shape (mask=0 region)', () => {
     const mask = makeCircle(32, 10);
     const sdf = computeSignedDistance(mask, 32, 32);
     // Corner (0,0) is far outside
@@ -139,17 +136,16 @@ describe('computeSignedDistance', () => {
   });
 
   it('signed distance: negative inside, positive outside', () => {
-    // Simple 5x5: center column is inside (mask=0), edges are outside (mask=1)
-    const mask = new Uint8Array(25).fill(1);
+    // Simple 5x5: center column is inside (mask=1), edges are outside (mask=0)
+    const mask = new Uint8Array(25).fill(0);
     // Make a cross/center region inside
     for (let y = 1; y < 4; y++) {
-      mask[y * 5 + 2] = 0; // center column, rows 1-3
+      mask[y * 5 + 2] = 1; // center column, rows 1-3
     }
-    mask[2 * 5 + 2] = 0; // center
     const sdf = computeSignedDistance(mask, 5, 5);
-    // Inside pixels (mask=0) should be negative
+    // Inside pixels (mask=1) should be negative
     expect(sdf[2 * 5 + 2]).toBeLessThan(0);
-    // Outside corner (mask=1) should be positive
+    // Outside corner (mask=0) should be positive
     expect(sdf[0]).toBeGreaterThan(0);
   });
 });

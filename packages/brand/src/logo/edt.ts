@@ -70,7 +70,8 @@ export function computeSignedDistance(mask: Uint8Array, width: number, height: n
   const sdf = new Float32Array(mask.length);
   const maxDim = Math.max(width, height);
   for (let i = 0; i < mask.length; i++) {
-    sdf[i] = (outer[i] - inner[i]) / maxDim;
+    // inner - outer: negative inside shape, positive outside (SDF convention)
+    sdf[i] = (inner[i] - outer[i]) / maxDim;
   }
   return sdf;
 }

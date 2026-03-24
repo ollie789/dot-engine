@@ -1,0 +1,112 @@
+<h2>Brand Configurator Layout</h2>
+<p class="subtitle">How should the configurator be laid out? The 3D preview is the star — controls should support, not compete.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="display: flex; height: 200px; gap: 2px; border-radius: 8px; overflow: hidden;">
+        <div style="width: 260px; background: #1a1a2e; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="color: #4a9eff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Brand Config</div>
+          <div style="background: #252540; border-radius: 4px; padding: 6px 8px; font-size: 10px; color: #888;">Name: Acme Corp</div>
+          <div style="background: #252540; border-radius: 4px; padding: 6px 8px; font-size: 10px; color: #888;">Logo: text("ACME")</div>
+          <div style="display: flex; gap: 4px;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #2D7A4A;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #E07A5F;"></div>
+          </div>
+          <div style="color: #666; font-size: 9px; margin-top: 4px;">PERSONALITY</div>
+          <div style="background: #252540; border-radius: 4px; height: 4px; position: relative;"><div style="background: #4a9eff; border-radius: 4px; height: 100%; width: 60%;"></div></div>
+          <div style="background: #252540; border-radius: 4px; height: 4px; position: relative;"><div style="background: #4a9eff; border-radius: 4px; height: 100%; width: 80%;"></div></div>
+          <div style="background: #252540; border-radius: 4px; height: 4px; position: relative;"><div style="background: #4a9eff; border-radius: 4px; height: 100%; width: 50%;"></div></div>
+          <div style="color: #666; font-size: 9px; margin-top: 4px;">CONTEXT</div>
+          <div style="display: flex; gap: 3px;">
+            <div style="background: #1a3a5c; border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 6px; font-size: 9px; color: #fff;">logo</div>
+            <div style="background: #252540; border: 1px solid #333; border-radius: 3px; padding: 2px 6px; font-size: 9px; color: #888;">hero</div>
+            <div style="background: #252540; border: 1px solid #333; border-radius: 3px; padding: 2px 6px; font-size: 9px; color: #888;">load</div>
+          </div>
+        </div>
+        <div style="flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #E07A5F 0%, #2D7A4A 60%, transparent 70%); opacity: 0.8;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Sidebar + Canvas</h3>
+      <p>Fixed sidebar on the left with all controls. 3D preview fills the rest. Classic configurator layout — familiar, everything visible at once.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="height: 200px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="background: #111; padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #222;">
+          <span style="color: #fff; font-size: 11px; font-weight: 600;">ACME</span>
+          <div style="display: flex; gap: 3px; margin-left: auto;">
+            <div style="background: #1a3a5c; border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 8px; font-size: 9px; color: #fff;">logo</div>
+            <div style="background: #222; border: 1px solid #333; border-radius: 3px; padding: 2px 8px; font-size: 9px; color: #888;">hero</div>
+            <div style="background: #222; border: 1px solid #333; border-radius: 3px; padding: 2px 8px; font-size: 9px; color: #888;">load</div>
+          </div>
+        </div>
+        <div style="flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center; position: relative;">
+          <div style="width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #E07A5F 0%, #2D7A4A 60%, transparent 70%); opacity: 0.8;"></div>
+        </div>
+        <div style="background: #111; padding: 8px 12px; border-top: 1px solid #222; display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <div style="width: 16px; height: 16px; border-radius: 50%; background: #2D7A4A; border: 2px solid #444;"></div>
+            <div style="width: 16px; height: 16px; border-radius: 50%; background: #E07A5F; border: 2px solid #444;"></div>
+          </div>
+          <div style="flex: 1; display: flex; gap: 8px;">
+            <div style="flex: 1;">
+              <div style="color: #555; font-size: 8px;">ENERGY</div>
+              <div style="background: #252540; border-radius: 3px; height: 3px;"><div style="background: #4a9eff; border-radius: 3px; height: 100%; width: 60%;"></div></div>
+            </div>
+            <div style="flex: 1;">
+              <div style="color: #555; font-size: 8px;">ORGANIC</div>
+              <div style="background: #252540; border-radius: 3px; height: 3px;"><div style="background: #4a9eff; border-radius: 3px; height: 100%; width: 80%;"></div></div>
+            </div>
+            <div style="flex: 1;">
+              <div style="color: #555; font-size: 8px;">DENSITY</div>
+              <div style="background: #252540; border-radius: 3px; height: 3px;"><div style="background: #4a9eff; border-radius: 3px; height: 100%; width: 50%;"></div></div>
+            </div>
+          </div>
+          <div style="color: #555; font-size: 9px; cursor: pointer;">⚙</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Full Canvas + Toolbar Bars</h3>
+      <p>3D preview takes 100% of the screen. Thin top bar for context/name, thin bottom bar for personality sliders + colors. Controls are minimal and ambient — the dot field IS the interface.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="height: 200px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center; position: relative;">
+          <div style="width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #E07A5F 0%, #2D7A4A 60%, transparent 70%); opacity: 0.8;"></div>
+          <!-- Floating panel -->
+          <div style="position: absolute; right: 12px; top: 12px; width: 180px; background: rgba(17,17,30,0.9); border: 1px solid #333; border-radius: 8px; padding: 10px; backdrop-filter: blur(10px);">
+            <div style="color: #4a9eff; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Brand</div>
+            <div style="color: #fff; font-size: 11px; margin-bottom: 8px;">Acme Corp</div>
+            <div style="display: flex; gap: 3px; margin-bottom: 8px;">
+              <div style="width: 14px; height: 14px; border-radius: 50%; background: #2D7A4A;"></div>
+              <div style="width: 14px; height: 14px; border-radius: 50%; background: #E07A5F;"></div>
+            </div>
+            <div style="color: #555; font-size: 8px; margin-bottom: 3px;">ENERGY</div>
+            <div style="background: #252540; border-radius: 3px; height: 3px; margin-bottom: 6px;"><div style="background: #4a9eff; border-radius: 3px; height: 100%; width: 60%;"></div></div>
+            <div style="color: #555; font-size: 8px; margin-bottom: 3px;">ORGANIC</div>
+            <div style="background: #252540; border-radius: 3px; height: 3px; margin-bottom: 6px;"><div style="background: #4a9eff; border-radius: 3px; height: 100%; width: 80%;"></div></div>
+            <div style="display: flex; gap: 3px; margin-top: 6px;">
+              <div style="background: #1a3a5c; border: 1px solid #4a9eff; border-radius: 3px; padding: 2px 6px; font-size: 8px; color: #fff;">logo</div>
+              <div style="background: #252540; border: 1px solid #333; border-radius: 3px; padding: 2px 6px; font-size: 8px; color: #888;">hero</div>
+              <div style="background: #252540; border: 1px solid #333; border-radius: 3px; padding: 2px 6px; font-size: 8px; color: #888;">load</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Full Canvas + Floating Panel</h3>
+      <p>3D preview takes the entire screen. A floating glassmorphism panel overlays the top-right corner with all controls. Can be collapsed/expanded. Feels like a creative tool — Figma/Spline-inspired.</p>
+    </div>
+  </div>
+</div>

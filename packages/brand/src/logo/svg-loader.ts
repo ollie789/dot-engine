@@ -30,8 +30,8 @@ export function loadSvgToMask(source: string, resolution: number): Promise<MaskR
       const imageData = ctx.getImageData(0, 0, width, height);
       const mask = new Uint8Array(width * height);
       for (let i = 0; i < mask.length; i++) {
-        // Alpha channel is at index i*4+3; threshold at 128
-        mask[i] = imageData.data[i * 4 + 3] < 128 ? 1 : 0;
+        // mask=1 where content IS present (alpha > 128 = inside shape)
+        mask[i] = imageData.data[i * 4 + 3] > 128 ? 1 : 0;
       }
       resolve({ mask, width, height });
     };
