@@ -130,6 +130,29 @@ body::after {
   background: #0d0d14;
 }
 
+.format-select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 6px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.format-select:hover,
+.format-select:focus {
+  border-color: var(--border-glow);
+  color: var(--text-bright);
+}
+
+.format-select option {
+  background: #0d0d14;
+}
+
 .logo-mode-group {
   display: flex;
   gap: 2px;
@@ -508,8 +531,8 @@ body::after {
 
 /* Canvas wrapper */
 .canvas-wrapper {
-  flex: 1;
-  position: relative;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import type { BrandContext, ImageFieldData } from '@dot-engine/brand';
 import { loadImageForField } from '@dot-engine/brand';
+import type { OutputFormat } from '../formats';
 
 const ALL_CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner', 'data'];
 
@@ -24,6 +25,11 @@ export interface TopBarProps {
   setActiveContext: (c: BrandContext) => void;
   dotCount?: number;
   onImageLoad?: (data: ImageFieldData | null) => void;
+  formats: OutputFormat[];
+  activeFormat: OutputFormat;
+  setActiveFormat: (f: OutputFormat) => void;
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 export function TopBar({
@@ -37,6 +43,11 @@ export function TopBar({
   setActiveContext,
   dotCount,
   onImageLoad,
+  formats,
+  activeFormat,
+  setActiveFormat,
+  canvasWidth,
+  canvasHeight,
 }: TopBarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -158,7 +169,30 @@ export function TopBar({
         ))}
       </div>
 
+      <div className="hud-separator" />
+
+      <select
+        className="format-select"
+        value={activeFormat.name}
+        onChange={e => {
+          const fmt = formats.find(f => f.name === e.target.value);
+          if (fmt) setActiveFormat(fmt);
+        }}
+        aria-label="Output format"
+      >
+        {formats.map(f => (
+          <option key={f.name} value={f.name}>
+            {f.icon} {f.label}
+          </option>
+        ))}
+      </select>
+
       <div className="top-bar-meta">
+        {activeFormat.aspect > 0 && canvasWidth && canvasHeight && (
+          <div className="meta-item">
+            <span className="meta-value">{canvasWidth}×{canvasHeight}</span>
+          </div>
+        )}
         {dotCount !== undefined && (
           <div className="meta-item">
             <span className="meta-label">dots</span>
