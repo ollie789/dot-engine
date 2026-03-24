@@ -168,10 +168,22 @@ function emitWgslDisplacement(node: DisplaceNode): string {
       const [tx, ty, tz] = noise.target;
       const strength = f(noise.strength);
       const target = `vec3f(${f(tx)}, ${f(ty)}, ${f(tz)})`;
-      return (
-        `  pos += normalize(${target} - pos) * ` +
-        `${strength} / max(length(${target} - pos), 0.01);`
-      );
+      const dir = `normalize(${target} - pos)`;
+      const dist = `length(${target} - pos)`;
+      let falloffExpr: string;
+      switch (noise.falloff) {
+        case 'linear':
+          falloffExpr = `${strength} * (1.0 - min(${dist} / 2.0, 1.0))`;
+          break;
+        case 'exponential':
+          falloffExpr = `${strength} * exp(-${dist} * 2.0)`;
+          break;
+        case 'inverse':
+        default:
+          falloffExpr = `${strength} / max(${dist}, 0.01)`;
+          break;
+      }
+      return `  pos += ${dir} * ${falloffExpr};`;
     }
 
     default: {

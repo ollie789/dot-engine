@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 
 export interface ScrollInfluenceOptions {
@@ -14,10 +14,10 @@ export interface ScrollInfluenceOptions {
 }
 
 export interface ScrollInfluence {
-  /** Smoothed scroll progress 0-1 */
-  progress: number;
-  /** Raw scroll position in pixels */
-  scrollY: number;
+  /** Ref — read .current in useFrame to get latest smoothed scroll progress 0-1. */
+  progress: RefObject<number>;
+  /** Ref — read .current in useFrame to get latest raw scroll position in pixels. */
+  scrollY: RefObject<number>;
 }
 
 export function useScrollInfluence(options?: ScrollInfluenceOptions): ScrollInfluence {
@@ -50,7 +50,7 @@ export function useScrollInfluence(options?: ScrollInfluenceOptions): ScrollInfl
   });
 
   return {
-    progress: smoothedProgress.current,
-    scrollY: scrollY.current,
+    progress: smoothedProgress as RefObject<number>,
+    scrollY: scrollY as RefObject<number>,
   };
 }

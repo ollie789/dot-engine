@@ -1,7 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { FieldRoot, AnimateNode } from '@dot-engine/core';
+import type { FieldRoot, AnimateNode, DisplaceNode } from '@dot-engine/core';
 import { compileField } from '../compiler/compiler.js';
 import { computeLodTier, type LodOverride, type LodTier } from './LodBenchmark.js';
 
@@ -51,15 +51,6 @@ export function DotField({
   }
   const meshRef = useRef<THREE.InstancedMesh>(null!);
   const { gl } = useThree();
-  const compiled = useMemo(() => compileField(fieldDesc), [fieldDesc]);
-
-  // Extract AnimateNode speed from field children
-  const animateSpeed = useMemo(() => {
-    const animateNode = fieldDesc.children.find(
-      (c): c is AnimateNode => c.type === 'animate',
-    );
-    return animateNode?.speed ?? 1.0;
-  }, [fieldDesc]);
 
   // Compute LOD tier
   const lodTier = useMemo((): LodTier => {
@@ -79,6 +70,26 @@ export function DotField({
       return computeLodTier(5, 10000); // mid GPU
     }
   }, [lod, gl]);
+
+  // When LOD says to skip flow field, strip flowField3D displacement nodes
+  const effectiveField = useMemo(() => {
+    if (lodTier.includeFlowField) return fieldDesc;
+    // Strip flow field displacement nodes
+    const filtered = fieldDesc.children.filter(
+      (c) => !(c.type === 'displace' && (c as DisplaceNode).noise.type === 'flowField3D'),
+    );
+    return { ...fieldDesc, children: filtered };
+  }, [fieldDesc, lodTier.includeFlowField]);
+
+  const compiled = useMemo(() => compileField(effectiveField), [effectiveField]);
+
+  // Extract AnimateNode speed from field children
+  const animateSpeed = useMemo(() => {
+    const animateNode = fieldDesc.children.find(
+      (c): c is AnimateNode => c.type === 'animate',
+    );
+    return animateNode?.speed ?? 1.0;
+  }, [fieldDesc]);
 
   const totalDots = useMemo(
     () => Math.min(compiled.totalDots, lodTier.maxDots),

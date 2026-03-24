@@ -1,6 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import type React from 'react';
 
 export interface PointerInfluenceOptions {
   /** Smoothing factor 0-1 (0 = instant, 0.9 = very smooth). Default 0.85 */
@@ -10,10 +11,10 @@ export interface PointerInfluenceOptions {
 }
 
 export interface PointerInfluence {
-  /** Smoothed pointer position in NDC (-1 to 1). Updated each frame. */
+  /** Smoothed pointer position in NDC. Read .x/.y in useFrame. */
   position: THREE.Vector2;
-  /** Whether the pointer is currently over the canvas */
-  isOver: boolean;
+  /** Ref — read .current in useFrame to get latest value. */
+  isOver: React.RefObject<boolean>;
 }
 
 export function usePointerInfluence(options?: PointerInfluenceOptions): PointerInfluence {
@@ -58,6 +59,6 @@ export function usePointerInfluence(options?: PointerInfluenceOptions): PointerI
 
   return {
     position: smoothed.current,
-    isOver: isOver.current,
+    isOver: isOver as RefObject<boolean>,
   };
 }
