@@ -1,39 +1,46 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import {
-  field, shape, grid, animate,
-  sphere, torus, smoothUnion, translate,
-  displace, simplex3D, flowField3D,
-} from '@dot-engine/core';
-import { DotField } from '@dot-engine/renderer';
+import { useState } from 'react';
+import { presets } from '@dot-engine/core';
+import { DotFieldCanvas } from '@dot-engine/renderer';
 
-const demoField = field(
-  shape(
-    smoothUnion(
-      sphere(0.6),
-      translate(torus(0.4, 0.15), [0, 0.3, 0]),
-      0.3,
-    ),
-  ),
-  grid({ type: 'uniform', resolution: [40, 40, 40] }),
-  displace(simplex3D({ scale: 3, speed: 0.2 }), { amount: 0.08 }),
-  displace(flowField3D({ scale: 2, speed: 0.3 }), { amount: 0.05 }),
-  animate({ speed: 0.5 }),
-);
+const presetNames = Object.keys(presets) as (keyof typeof presets)[];
 
 export function App() {
+  const [active, setActive] = useState<keyof typeof presets>('organic');
+
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
-        <ambientLight intensity={0.5} />
-        <DotField
-          field={demoField}
-          colorPrimary="#2D7A4A"
-          colorAccent="#E07A5F"
-          lod="auto"
-        />
-        <OrbitControls />
-      </Canvas>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{
+        padding: '12px 16px',
+        display: 'flex',
+        gap: '8px',
+        background: '#111',
+        borderBottom: '1px solid #222',
+      }}>
+        <span style={{ color: '#666', fontSize: '13px', alignSelf: 'center', marginRight: '8px' }}>
+          Preset:
+        </span>
+        {presetNames.map(name => (
+          <button
+            key={name}
+            onClick={() => setActive(name)}
+            style={{
+              padding: '6px 16px',
+              border: name === active ? '1px solid #4a9eff' : '1px solid #333',
+              background: name === active ? '#1a3a5c' : '#222',
+              color: '#fff',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              textTransform: 'capitalize',
+            }}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <div style={{ flex: 1 }}>
+        <DotFieldCanvas field={presets[active]} lod="auto" />
+      </div>
     </div>
   );
 }
