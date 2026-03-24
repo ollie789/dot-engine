@@ -183,10 +183,48 @@ export interface AnimateNode extends BaseNode {
 }
 
 // ---------------------------------------------------------------------------
+// Noise configs for displacement
+// ---------------------------------------------------------------------------
+
+export interface Simplex3DConfig {
+  readonly type: 'simplex3D';
+  readonly scale: number;
+  readonly speed: number;
+}
+
+export interface DomainWarp3DConfig {
+  readonly type: 'domainWarp3D';
+  readonly octaves: number;
+  readonly scale: number;
+  readonly speed?: number;
+}
+
+export interface FlowField3DConfig {
+  readonly type: 'flowField3D';
+  readonly scale: number;
+  readonly speed: number;
+}
+
+export interface AttractConfig {
+  readonly type: 'attract';
+  readonly target: [number, number, number];
+  readonly strength: number;
+  readonly falloff: 'inverse' | 'linear' | 'exponential';
+}
+
+export type NoiseConfig = Simplex3DConfig | DomainWarp3DConfig | FlowField3DConfig | AttractConfig;
+
+export interface DisplaceNode extends BaseNode {
+  readonly type: 'displace';
+  readonly noise: NoiseConfig;
+  readonly amount: number;
+}
+
+// ---------------------------------------------------------------------------
 // Field root
 // ---------------------------------------------------------------------------
 
-export type FieldChildNode = ShapeNode | GridNode | AnimateNode;
+export type FieldChildNode = ShapeNode | GridNode | AnimateNode | DisplaceNode;
 
 export interface FieldRoot {
   readonly type: 'field';
