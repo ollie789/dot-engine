@@ -1,27 +1,24 @@
-import { field, shape, grid, animate, color } from '@dot-engine/core';
-import type { FieldChildNode } from '@dot-engine/core';
 import { importLogo } from '../logo/import.js';
 import { mapPersonality } from './personality.js';
-import { motionToDisplacements } from './motion.js';
-import type { BrandConfig, Brand } from './types.js';
+import { buildContextField } from './contexts.js';
+import { buildDataField } from './data-field.js';
+import type { BrandConfig, Brand, BrandContext, ContextOptions } from './types.js';
 
 export async function defineBrand(config: BrandConfig): Promise<Brand> {
   const logo = await importLogo(config.logo);
   const params = mapPersonality(config.personality);
 
-  return {
+  const brand: Brand = {
     config,
     logo,
-    field() {
-      const res = params.gridResolution;
-      const children: FieldChildNode[] = [
-        shape(logo.sdfNode),
-        grid({ type: 'uniform', resolution: [res, res, res] }),
-        color({ primary: config.colors.primary, accent: config.colors.accent, mode: 'depth' }),
-        ...motionToDisplacements(config.motion.style, config.motion.speed * params.animateSpeed, params.displacementAmount, params.useFlowField),
-        animate({ speed: config.motion.speed * params.animateSpeed }),
-      ];
-      return field(...children);
+    field(context: BrandContext = 'logo', options?: ContextOptions) {
+      if (context === 'data') {
+        const dataPoints = options?.data ?? [];
+        return buildDataField(brand, params, dataPoints, options);
+      }
+      return buildContextField(brand, context, params, options);
     },
   };
+
+  return brand;
 }
