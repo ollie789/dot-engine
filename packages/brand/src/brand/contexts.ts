@@ -29,6 +29,11 @@ export function buildContextField(
 }
 
 export function buildLogoField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
+  // If the brand has a pre-built field, use it directly for logo context
+  if (brand.logo.prebuiltField) {
+    return brand.logo.prebuiltField;
+  }
+
   const speed = brand.config.motion.speed * params.animateSpeed;
   const aspect = brand.logo.aspectRatio;
 

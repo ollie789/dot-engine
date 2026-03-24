@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { _resetIds } from '../../core/src/nodes/types.js';
+import { _resetIds, field, shape, grid } from '../../core/src/index.js';
+import { sphere } from '../../core/src/sdf/primitives.js';
 import { motionToDisplacements } from '../src/brand/motion.js';
+import { sdf, customField } from '../src/logo/types.js';
 
 beforeEach(() => {
   _resetIds();
@@ -63,5 +65,39 @@ describe('motionToDisplacements()', () => {
       expect(flowNoise.speed).toBeCloseTo(0.7, 5);
     }
     expect(flowNode.amount).toBeCloseTo(0.06, 5);
+  });
+});
+
+describe('SDF logo input', () => {
+  it('sdf() creates SdfInput with node', () => {
+    const node = sphere(0.5);
+    const input = sdf(node);
+    expect(input.type).toBe('sdf');
+    expect(input.node).toBe(node);
+    expect(input.field).toBeUndefined();
+  });
+
+  it('customField() creates SdfInput with pre-built field', () => {
+    const f = field(shape(sphere(0.5)), grid({ type: 'uniform', resolution: [20, 20, 20] }));
+    const input = customField(f);
+    expect(input.type).toBe('sdf');
+    expect(input.field).toBe(f);
+  });
+
+  it('sdf() node reference is preserved', () => {
+    const node = sphere(0.42);
+    const input = sdf(node);
+    expect(input.node).toBe(node);
+    expect(input.node.type).toBe('sphere');
+    if (input.node.type === 'sphere') {
+      expect(input.node.radius).toBe(0.42);
+    }
+  });
+
+  it('customField() field reference is preserved and node is null', () => {
+    const f = field(shape(sphere(0.3)), grid({ type: 'uniform', resolution: [10, 10, 10] }));
+    const input = customField(f);
+    expect(input.field).toBe(f);
+    expect(input.field?.type).toBe('field');
   });
 });

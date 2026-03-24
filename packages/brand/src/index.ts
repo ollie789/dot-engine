@@ -1,6 +1,6 @@
 export { importLogo } from './logo/import.js';
-export { svg, image, text } from './logo/types.js';
-export type { LogoInput, ProcessedLogo, ImportOptions } from './logo/types.js';
+export { svg, image, text, sdf, customField } from './logo/types.js';
+export type { LogoInput, ProcessedLogo, ImportOptions, SdfInput } from './logo/types.js';
 export { loadImageForField, grabVideoFrame } from './logo/image-field-loader.js';
 export type { ImageFieldData } from './logo/image-field-loader.js';
 export { defineBrand } from './brand/define-brand.js';

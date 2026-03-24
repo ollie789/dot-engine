@@ -16,6 +16,19 @@ export async function importLogo(input: LogoInput, options?: ImportOptions): Pro
     case 'svg': { const r = await loadSvgToMask(input.source, resolution); mask = r.mask; width = r.width; height = r.height; break; }
     case 'image': { const r = await loadImageToMask(input.source, resolution); mask = r.mask; width = r.width; height = r.height; break; }
     case 'text': { const r = loadTextToMask(input.text, resolution, input.font, input.weight); mask = r.mask; width = r.width; height = r.height; break; }
+    case 'sdf': {
+      // No EDT needed — the SDF is already a node
+      const sdfNode = input.node;
+      return {
+        sdfTexture: new Float32Array(0),
+        width: 0,
+        height: 0,
+        aspectRatio: 1,
+        textureId: `sdf_${++_logoCounter}`,
+        sdfNode,
+        prebuiltField: input.field ?? null,
+      };
+    }
   }
 
   const sdfTexture = computeSignedDistance(mask, width, height);
