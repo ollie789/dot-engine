@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { DotField, usePointerInfluence, ParticleSystem } from '@dot-engine/renderer';
 import type { Brand, BrandContext, ParticlePresetName, ImageFieldData } from '@dot-engine/brand';
 import { particlePresets } from '@dot-engine/brand';
-import { imageField } from '@dot-engine/core';
+import { imageField, shape, sphere } from '@dot-engine/core';
 import type { FieldRoot } from '@dot-engine/core';
 
 /**
@@ -53,10 +53,17 @@ function Scene({ brand, activeContext, pointerEnabled, colorPrimary, colorAccent
   const fieldRoot = useMemo((): FieldRoot | null => {
     if (!baseFieldRoot) return null;
     if (!imageData) return baseFieldRoot;
-    const imgNode = imageField(imageData.textureId);
+    // When image is loaded, replace the logo SDF with a pass-all sphere
+    // so only the image field drives dot visibility via brightness threshold
+    const childrenWithoutShape = baseFieldRoot.children.filter(c => c.type !== 'shape');
+    const imgNode = imageField(imageData.textureId, { colorFromImage: true });
     return {
       ...baseFieldRoot,
-      children: [...baseFieldRoot.children, imgNode],
+      children: [
+        shape(sphere(100)), // huge sphere — everything is "inside", image field handles visibility
+        ...childrenWithoutShape,
+        imgNode,
+      ],
     };
   }, [baseFieldRoot, imageData]);
 
