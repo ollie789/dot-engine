@@ -68,16 +68,21 @@ function emitDisplacement(node: DisplaceNode): string {
     }
 
     case 'domainWarp3D': {
-      // Effective scale = scale * octaves
-      const effectiveScale = f(noise.scale * noise.octaves);
+      const scale = f(noise.scale);
       const speed = f(noise.speed ?? 0);
-      return (
-        `  displaced += vec3(` +
-        `snoise(displaced * ${effectiveScale} + uTime * ${speed}), ` +
-        `snoise(displaced * ${effectiveScale} + uTime * ${speed} + 100.0), ` +
-        `snoise(displaced * ${effectiveScale} + uTime * ${speed} + 200.0)` +
-        `) * ${amount};`
-      );
+      const lines: string[] = [];
+      lines.push(`  vec3 _warp = displaced;`);
+      for (let i = 0; i < noise.octaves; i++) {
+        lines.push(
+          `  _warp += vec3(` +
+          `snoise(_warp * ${scale} + uTime * ${speed}), ` +
+          `snoise(_warp * ${scale} + uTime * ${speed} + 100.0), ` +
+          `snoise(_warp * ${scale} + uTime * ${speed} + 200.0)` +
+          `) * ${amount};`,
+        );
+      }
+      lines.push(`  displaced = _warp;`);
+      return lines.join('\n');
     }
 
     case 'flowField3D': {

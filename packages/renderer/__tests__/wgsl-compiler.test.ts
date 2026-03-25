@@ -8,6 +8,7 @@ import {
   displace,
   simplex3D,
   flowField3D,
+  domainWarp3D,
 } from '../../core/src/index.js';
 import { compileFieldWgsl } from '../src/compiler/wgsl-compiler.js';
 
@@ -189,5 +190,19 @@ describe('compileFieldWgsl', () => {
 
     expect(compiled.renderVertexShader).toContain('@vertex');
     expect(compiled.renderFragmentShader).toContain('@fragment');
+  });
+
+  it('domainWarp3D: iterative warping with octaves in WGSL', () => {
+    const f = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+      displace(domainWarp3D({ octaves: 3, scale: 2.0 }), { amount: 0.15 }),
+    );
+    const compiled = compileFieldWgsl(f);
+
+    expect(compiled.computeShader).toContain('var _warp = pos;');
+    const passes = compiled.computeShader.split('_warp += vec3f(').length - 1;
+    expect(passes).toBe(3);
+    expect(compiled.computeShader).toContain('pos = _warp;');
   });
 });

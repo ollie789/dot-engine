@@ -147,15 +147,21 @@ function emitWgslDisplacement(node: DisplaceNode): string {
     }
 
     case 'domainWarp3D': {
-      const effectiveScale = f(noise.scale * noise.octaves);
+      const scale = f(noise.scale);
       const speed = f(noise.speed ?? 0);
-      return (
-        `  pos += vec3f(\n` +
-        `    snoise(pos * ${effectiveScale} + uniforms.time * ${speed}),\n` +
-        `    snoise(pos * ${effectiveScale} + uniforms.time * ${speed} + 100.0),\n` +
-        `    snoise(pos * ${effectiveScale} + uniforms.time * ${speed} + 200.0)\n` +
-        `  ) * ${amount};`
-      );
+      const lines: string[] = [];
+      lines.push(`  var _warp = pos;`);
+      for (let i = 0; i < noise.octaves; i++) {
+        lines.push(
+          `  _warp += vec3f(\n` +
+          `    snoise(_warp * ${scale} + uniforms.time * ${speed}),\n` +
+          `    snoise(_warp * ${scale} + uniforms.time * ${speed} + 100.0),\n` +
+          `    snoise(_warp * ${scale} + uniforms.time * ${speed} + 200.0)\n` +
+          `  ) * ${amount};`,
+        );
+      }
+      lines.push(`  pos = _warp;`);
+      return lines.join('\n');
     }
 
     case 'flowField3D': {

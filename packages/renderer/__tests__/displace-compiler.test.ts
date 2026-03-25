@@ -113,19 +113,33 @@ describe('compileField with displacement', () => {
     expect(compiled.vertexShader).toContain('void main()');
   });
 
-  it('domainWarp3D displacement: vertexShader contains snoise with effective scale', () => {
+  it('domainWarp3D displacement: iterative warping with octaves', () => {
     const f = field(
       shape(sphere(0.5)),
       grid({ type: 'uniform', resolution: [10, 10, 10] }),
-      // scale=2, octaves=3 → effectiveScale=6
       displace(domainWarp3D({ octaves: 3, scale: 2.0 }), { amount: 0.15 }),
     );
     const compiled = compileField(f);
 
-    expect(compiled.vertexShader).toContain('snoise');
-    // effective scale 6.0
-    expect(compiled.vertexShader).toContain('6.0');
+    expect(compiled.vertexShader).toContain('vec3 _warp = displaced;');
+    const passes = compiled.vertexShader.split('_warp += vec3(').length - 1;
+    expect(passes).toBe(3);
+    expect(compiled.vertexShader).toContain('displaced = _warp;');
+    expect(compiled.vertexShader).toContain('2.0');
     expect(compiled.vertexShader).toContain('0.15');
+  });
+
+  it('domainWarp3D with 1 octave: single warp pass', () => {
+    const f = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+      displace(domainWarp3D({ octaves: 1, scale: 1.5 }), { amount: 0.1 }),
+    );
+    const compiled = compileField(f);
+
+    const passes = compiled.vertexShader.split('_warp += vec3(').length - 1;
+    expect(passes).toBe(1);
+    expect(compiled.vertexShader).toContain('displaced = _warp;');
   });
 
   it('attract with no snoise: no noise functions in shader', () => {
