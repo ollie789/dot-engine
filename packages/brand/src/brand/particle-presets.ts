@@ -21,32 +21,32 @@ export function buildParticles(
   switch (mode) {
     case 'ambient':
       return particles({
-        emitter: pointEmitter([0, 0, 0], 15 + params.animateSpeed * 30),
+        emitter: pointEmitter([0, 0, 0], 5 + params.animateSpeed * 10),
         lifecycle: { lifetime: 3 + (1 - params.animateSpeed) * 4, fadeIn: 0.5, fadeOut: 1.5 },
-        motion: { speed: speed * 0.3, spread: 1, drag: 0.3, turbulence: amount * 5 },
-        maxParticles: 500,
+        motion: { speed: speed * 0.15, spread: 1, drag: 0.3, turbulence: amount * 1.5 },
+        maxParticles: 80,
       });
     case 'burst':
       return particles({
-        emitter: { type: 'point', position: [0, 0, 0], rate: 0, burst: 150 + Math.round(params.gridResolution * 3) },
+        emitter: { type: 'point', position: [0, 0, 0], rate: 0, burst: 30 },
         lifecycle: { lifetime: 1.5 + speed, fadeIn: 0.05, fadeOut: 0.8 },
-        motion: { speed: 1.5 + speed, spread: 1, gravity: [0, -0.5, 0], drag: 0.1 },
-        maxParticles: 1000,
+        motion: { speed: 0.5 + speed * 0.3, spread: 1, gravity: [0, -0.2, 0], drag: 0.1 },
+        maxParticles: 50,
       });
     case 'rising':
       return particles({
-        emitter: pointEmitter([0, -1, 0], 20 + params.animateSpeed * 20),
+        emitter: pointEmitter([0, -1, 0], 5 + params.animateSpeed * 8),
         lifecycle: { lifetime: 3, fadeIn: 0.3, fadeOut: 1 },
-        motion: { velocity: [0, 1, 0], speed: 0.3 + speed * 0.5, spread: 0.3, turbulence: amount * 3 },
-        maxParticles: 600,
+        motion: { velocity: [0, 1, 0], speed: 0.15 + speed * 0.2, spread: 0.3, turbulence: amount * 1 },
+        maxParticles: 60,
       });
     case 'edges':
       // Particles emit from the surface area (spread around origin matching the logo bounds)
       return particles({
-        emitter: surfaceEmitter(25 + params.animateSpeed * 25),
+        emitter: surfaceEmitter(5 + params.animateSpeed * 10),
         lifecycle: { lifetime: 2 + (1 - params.animateSpeed) * 2, fadeIn: 0.2, fadeOut: 1.2 },
-        motion: { speed: speed * 0.2, spread: 0.8, drag: 0.5, turbulence: amount * 4 },
-        maxParticles: 400,
+        motion: { speed: speed * 0.1, spread: 0.8, drag: 0.5, turbulence: amount * 1.5 },
+        maxParticles: 60,
       });
     default:
       return null;

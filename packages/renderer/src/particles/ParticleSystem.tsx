@@ -51,7 +51,7 @@ export function ParticleSystem({ config, color = '#4a9eff', size = 0.015 }: Part
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, maxParticles]} frustumCulled={false}>
       <icosahedronGeometry args={[1, 1]} />
-      <meshBasicMaterial color={color} transparent opacity={0.8} depthWrite={false} />
+      <meshBasicMaterial color={color} transparent opacity={0.4} depthWrite={false} />
     </instancedMesh>
   );
 }

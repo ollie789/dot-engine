@@ -33,9 +33,9 @@ describe('presets.crystal', () => {
     expect(animateChild).toBeDefined();
   });
 
-  it('does not have displace children', () => {
+  it('has one displace child', () => {
     const displaceChildren = presets.crystal.children.filter(c => c.type === 'displace');
-    expect(displaceChildren).toHaveLength(0);
+    expect(displaceChildren).toHaveLength(1);
   });
 });
 
@@ -81,9 +81,9 @@ describe('presets.minimal', () => {
     expect(shapeChild.sdf.type).toBe('sphere');
   });
 
-  it('has no displace children', () => {
+  it('has one displace child', () => {
     const displaceChildren = presets.minimal.children.filter(c => c.type === 'displace');
-    expect(displaceChildren).toHaveLength(0);
+    expect(displaceChildren).toHaveLength(1);
   });
 
   it('has color and animate children', () => {

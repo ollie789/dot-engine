@@ -84,6 +84,7 @@ interface SceneProps {
   colorPrimary: string;
   colorAccent: string;
   particleMode?: ParticleMode;
+  particleSize?: number;
   imageData?: ImageFieldData | null;
   colorFromImage?: boolean;
   effectiveAspect: number;
@@ -97,6 +98,7 @@ function Scene({
   colorPrimary,
   colorAccent,
   particleMode,
+  particleSize,
   imageData,
   colorFromImage,
   effectiveAspect,
@@ -193,7 +195,7 @@ function Scene({
         imageTextures={imageTextures}
       />
       {particleConfig && (
-        <ParticleSystem config={particleConfig} color={colorAccent} />
+        <ParticleSystem config={particleConfig} color={colorAccent} size={particleSize ?? 0.01} />
       )}
       <OrbitControls />
     </>
@@ -208,6 +210,7 @@ export interface Canvas3DProps {
   colorAccent: string;
   isLoading?: boolean;
   particleMode?: ParticleMode;
+  particleSize?: number;
   imageData?: ImageFieldData | null;
   colorFromImage?: boolean;
   format: OutputFormat;
@@ -222,6 +225,7 @@ export function Canvas3D({
   colorAccent,
   isLoading,
   particleMode,
+  particleSize,
   imageData,
   colorFromImage,
   format,
@@ -261,6 +265,7 @@ export function Canvas3D({
               colorPrimary={colorPrimary}
               colorAccent={colorAccent}
               particleMode={particleMode}
+              particleSize={particleSize}
               imageData={imageData}
               colorFromImage={colorFromImage}
               effectiveAspect={effectiveAspect}

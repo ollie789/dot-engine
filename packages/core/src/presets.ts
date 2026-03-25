@@ -36,6 +36,9 @@ export const presets = {
   crystal: definePreset({
     shape: smoothUnion(box([0.4, 0.4, 0.4], 0.05), sphere(0.35), 0.15),
     color: { primary: '#88ccff', accent: '#ffffff', mode: 'depth' },
+    displace: [
+      { noise: simplex3D({ scale: 2, speed: 0.1 }), amount: 0.03 },
+    ],
     animate: { speed: 0.1 },
   }),
 
@@ -52,6 +55,9 @@ export const presets = {
   minimal: definePreset({
     shape: sphere(0.7),
     color: { primary: '#e0e0e0', accent: '#808080', mode: 'depth' },
+    displace: [
+      { noise: simplex3D({ scale: 1.5, speed: 0.05 }), amount: 0.02 },
+    ],
     animate: { speed: 0.05 },
   }),
 } as const;

@@ -44,7 +44,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'flow', motionSpeed: 0.2,
     particleMode: 'ambient',
     dotSizeMin: 0.002, dotSizeMax: 0.012, edgeSoftness: 0.06,
-    twist: 0, bend: 0, mirrorX: false, mirrorY: false,
+    twist: 0.15, bend: 0.1, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#c4a35a', suggestedAccent: '#2a1f3d',
   },
   {
@@ -68,7 +68,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'flow', motionSpeed: 0.35,
     particleMode: 'ambient',
     dotSizeMin: 0.002, dotSizeMax: 0.018, edgeSoftness: 0.08,
-    twist: 0, bend: 0, mirrorX: false, mirrorY: false,
+    twist: 0.1, bend: 0.15, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#2D7A4A', suggestedAccent: '#E07A5F',
   },
   {
@@ -80,7 +80,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'pulse', motionSpeed: 0.7,
     particleMode: 'burst',
     dotSizeMin: 0.003, dotSizeMax: 0.02, edgeSoftness: 0.05,
-    twist: 0, bend: 0, mirrorX: false, mirrorY: false,
+    twist: 0.5, bend: 0.3, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#ff6b4a', suggestedAccent: '#4a9eff',
   },
   {
@@ -92,7 +92,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'flow', motionSpeed: 0.25,
     particleMode: 'rising',
     dotSizeMin: 0.001, dotSizeMax: 0.01, edgeSoftness: 0.1,
-    twist: 0.3, bend: 0, mirrorX: false, mirrorY: false,
+    twist: 0.3, bend: 0.15, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#6b5bff', suggestedAccent: '#00e5ff',
   },
   {
@@ -116,7 +116,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'pulse', motionSpeed: 0.6,
     particleMode: 'edges',
     dotSizeMin: 0.002, dotSizeMax: 0.015, edgeSoftness: 0.07,
-    twist: 0, bend: 0, mirrorX: false, mirrorY: false,
+    twist: 0.2, bend: 0, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#00ff88', suggestedAccent: '#ff00ff',
   },
   {
@@ -152,7 +152,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'breathe', motionSpeed: 0.15,
     particleMode: 'rising',
     dotSizeMin: 0.001, dotSizeMax: 0.008, edgeSoftness: 0.06,
-    twist: 0.1, bend: 0, mirrorX: true, mirrorY: true,
+    twist: 0.1, bend: 0.1, mirrorX: true, mirrorY: true,
     suggestedPrimary: '#a8d8ea', suggestedAccent: '#ffffff',
   },
   {
@@ -164,7 +164,7 @@ export const VIBES: Vibe[] = [
     motionStyle: 'flow', motionSpeed: 0.4,
     particleMode: 'rising',
     dotSizeMin: 0.002, dotSizeMax: 0.02, edgeSoftness: 0.07,
-    twist: 0, bend: 0.2, mirrorX: false, mirrorY: false,
+    twist: 0.15, bend: 0.3, mirrorX: false, mirrorY: false,
     suggestedPrimary: '#ff4500', suggestedAccent: '#ffd700',
   },
 ];
