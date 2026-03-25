@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BrandContext } from '@bigpuddle/dot-engine-brand';
 import type { OutputFormat } from '../formats';
+import { VERSION } from '../version';
 
 const ALL_CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner', 'data'];
 
@@ -85,7 +86,7 @@ export function TopBar({
           </div>
         )}
         <div className="meta-item">
-          <span className="meta-value">v0.2.0</span>
+          <span className="meta-value">v{VERSION}</span>
         </div>
       </div>
     </div>

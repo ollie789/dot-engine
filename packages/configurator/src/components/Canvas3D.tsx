@@ -85,6 +85,7 @@ interface SceneProps {
   colorAccent: string;
   particleMode?: ParticleMode;
   imageData?: ImageFieldData | null;
+  colorFromImage?: boolean;
   effectiveAspect: number;
   contextOptions?: Record<string, unknown>;
 }
@@ -97,6 +98,7 @@ function Scene({
   colorAccent,
   particleMode,
   imageData,
+  colorFromImage,
   effectiveAspect,
   contextOptions,
 }: SceneProps) {
@@ -126,7 +128,7 @@ function Scene({
     // When image is loaded, replace the logo SDF with a pass-all sphere
     // so only the image field drives dot visibility via brightness threshold
     const childrenWithoutShape = baseFieldRoot.children.filter(c => c.type !== 'shape');
-    const imgNode = imageField(imageData.textureId, { colorFromImage: true });
+    const imgNode = imageField(imageData.textureId, { colorFromImage: colorFromImage ?? true });
     return {
       ...baseFieldRoot,
       children: [
@@ -135,7 +137,7 @@ function Scene({
         imgNode,
       ],
     };
-  }, [baseFieldRoot, imageData]);
+  }, [baseFieldRoot, imageData, colorFromImage]);
 
   // Build textures map from the brand's processed logo
   const textures = useMemo(() => {
@@ -207,6 +209,7 @@ export interface Canvas3DProps {
   isLoading?: boolean;
   particleMode?: ParticleMode;
   imageData?: ImageFieldData | null;
+  colorFromImage?: boolean;
   format: OutputFormat;
   contextOptions?: Record<string, unknown>;
 }
@@ -220,6 +223,7 @@ export function Canvas3D({
   isLoading,
   particleMode,
   imageData,
+  colorFromImage,
   format,
   contextOptions,
 }: Canvas3DProps) {
@@ -258,6 +262,7 @@ export function Canvas3D({
               colorAccent={colorAccent}
               particleMode={particleMode}
               imageData={imageData}
+              colorFromImage={colorFromImage}
               effectiveAspect={effectiveAspect}
               contextOptions={contextOptions}
             />

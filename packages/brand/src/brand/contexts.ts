@@ -1,4 +1,4 @@
-import { field, shape, grid, animate, color, size, twist, bend, mirror } from '@bigpuddle/dot-engine-core';
+import { field, shape, grid, animate, color, size, opacity, twist, bend, mirror } from '@bigpuddle/dot-engine-core';
 import type { FieldChildNode, FieldRoot, SdfNode } from '@bigpuddle/dot-engine-core';
 import type { Brand, ContextOptions, BrandContext } from './types.js';
 import type { MappedParams } from './personality.js';
@@ -22,7 +22,7 @@ export function buildContextField(
   switch (context) {
     case 'logo': return buildLogoField(brand, params, options);
     case 'hero': return buildHeroField(brand, params, options);
-    case 'loading': return buildLoadingField(brand, params);
+    case 'loading': return buildLoadingField(brand, params, options);
     case 'banner': return buildBannerField(brand, params, options);
     default: return buildLogoField(brand, params, options);
   }
@@ -63,12 +63,15 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, by * 2, bz * 2] }),
-    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
+    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: options?.colorMode ?? 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.5, params.useFlowField),
     animate({ speed }),
   ];
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
+  }
+  if (options?.opacityMin !== undefined || options?.opacityMax !== undefined) {
+    children.push(opacity({ min: options.opacityMin ?? 0.3, max: options.opacityMax ?? 1.0, mode: options.opacityMode }));
   }
   const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
   return { ...field(...children), edgeSoftness };
@@ -99,18 +102,21 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, 2, 0.5] }),
-    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
+    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: options?.colorMode ?? 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.8, params.useFlowField),
     animate({ speed }),
   ];
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
   }
+  if (options?.opacityMin !== undefined || options?.opacityMax !== undefined) {
+    children.push(opacity({ min: options.opacityMin ?? 0.3, max: options.opacityMax ?? 1.0, mode: options.opacityMode }));
+  }
   const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
   return { ...field(...children), edgeSoftness };
 }
 
-export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot {
+export function buildLoadingField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
   if (brand.logo.prebuiltField) {
     return brand.logo.prebuiltField;
   }
@@ -120,11 +126,14 @@ export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot
   const children: FieldChildNode[] = [
     shape(brand.logo.sdfNode!),
     grid({ type: 'uniform', resolution: [res, res, res] }),
-    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
+    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: options?.colorMode ?? 'depth' }),
     // Only breathing displacement for loading — override to 'breathe'
     ...motionToDisplacements('breathe', speed, params.displacementAmount, false),
     animate({ speed }),
   ];
+  if (options?.opacityMin !== undefined || options?.opacityMax !== undefined) {
+    children.push(opacity({ min: options.opacityMin ?? 0.3, max: options.opacityMax ?? 1.0, mode: options.opacityMode }));
+  }
   return { ...field(...children), edgeSoftness: params.edgeSoftness };
 }
 
@@ -146,12 +155,15 @@ export function buildBannerField(brand: Brand, params: MappedParams, options?: C
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bannerAspect * 2, 2, 0.3] }),
-    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
+    color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: options?.colorMode ?? 'depth' }),
     ...motionToDisplacements(brand.config.motion.style, speed, params.displacementAmount * 0.4, params.useFlowField),
     animate({ speed }),
   ];
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
+  }
+  if (options?.opacityMin !== undefined || options?.opacityMax !== undefined) {
+    children.push(opacity({ min: options.opacityMin ?? 0.3, max: options.opacityMax ?? 1.0, mode: options.opacityMode }));
   }
   const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
   return { ...field(...children), edgeSoftness };

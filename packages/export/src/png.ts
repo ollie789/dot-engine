@@ -8,6 +8,7 @@ export interface ExportPNGOptions {
   background?: string;
   colorPrimary?: string;
   colorAccent?: string;
+  textures?: Record<string, { data: Float32Array; width: number; height: number; depth: number; aspectRatio: number }>;
 }
 
 export async function exportPNG(
@@ -50,6 +51,23 @@ export async function exportPNG(
     depthWrite: true,
     depthTest: true,
   });
+  // Bind logo SDF texture uniforms if provided
+  const boundTextures: THREE.DataTexture[] = [];
+  if (options.textures) {
+    for (const [tid, tex] of Object.entries(options.textures)) {
+      const dataTex = new THREE.DataTexture(tex.data, tex.width, tex.height, THREE.RedFormat, THREE.FloatType);
+      dataTex.minFilter = THREE.LinearFilter;
+      dataTex.magFilter = THREE.LinearFilter;
+      dataTex.wrapS = THREE.ClampToEdgeWrapping;
+      dataTex.wrapT = THREE.ClampToEdgeWrapping;
+      dataTex.needsUpdate = true;
+      material.uniforms[`uLogoSDF_${tid}`] = { value: dataTex };
+      material.uniforms[`uLogoDepth_${tid}`] = { value: tex.depth };
+      material.uniforms[`uLogoAspect_${tid}`] = { value: tex.aspectRatio };
+      boundTextures.push(dataTex);
+    }
+  }
+
   const mesh = new THREE.InstancedMesh(geometry, material, compiled.totalDots);
   mesh.frustumCulled = false;
   scene.add(mesh);
@@ -69,6 +87,9 @@ export async function exportPNG(
   renderer.dispose();
   geometry.dispose();
   material.dispose();
+  for (const tex of boundTextures) {
+    tex.dispose();
+  }
 
   return blob;
 }

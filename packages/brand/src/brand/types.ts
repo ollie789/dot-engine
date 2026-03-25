@@ -32,6 +32,12 @@ export interface ContextOptions {
   dotSizeMin?: number;
   dotSizeMax?: number;
   edgeSoftness?: number;
+  // Color mode override
+  colorMode?: 'depth' | 'position' | 'noise' | 'uniform';
+  // Opacity overrides
+  opacityMin?: number;
+  opacityMax?: number;
+  opacityMode?: 'depth' | 'edgeGlow' | 'uniform';
 }
 
 export interface BrandConfig {

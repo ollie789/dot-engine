@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Brand, BrandContext } from '@bigpuddle/dot-engine-brand';
 import type { OutputFormat } from '../formats';
+import { VERSION } from '../version';
 
 export interface BottomBarProps {
   pointerEnabled: boolean;
@@ -23,6 +24,7 @@ export function BottomBar({
 }: BottomBarProps) {
   const [applyLabel, setApplyLabel] = useState('Apply');
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   // Close export menu when clicking outside
@@ -52,42 +54,72 @@ export function BottomBar({
 
   async function handleExportPNG() {
     setExportMenuOpen(false);
-    if (!brand) return;
-    const fieldRoot = brand.field(activeContext, { canvasAspect: aspect || 16 / 9 });
-    const { exportPNG } = await import('@bigpuddle/dot-engine-export');
-    const colors = brand.config.colors;
-    const blob = await exportPNG(fieldRoot, {
-      width: aspect >= 1 ? 2048 : (aspect > 0 ? Math.round(2048 * aspect) : 2048),
-      height: aspect >= 1 ? Math.round(2048 / aspect) : 2048,
-      background: colorBackground,
-      colorPrimary: colors.primary,
-      colorAccent: colors.accent,
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${brandName.toLowerCase().replace(/\s+/g, '-')}-${activeContext}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!brand || isExporting) return;
+    setIsExporting(true);
+    try {
+      const colors = brand.config.colors;
+      const fieldRoot = brand.field(activeContext, { canvasAspect: aspect || 16 / 9 });
+      const { exportPNG } = await import('@bigpuddle/dot-engine-export');
+
+      // Build texture map from brand logo
+      const textures: Record<string, { data: Float32Array; width: number; height: number; depth: number; aspectRatio: number }> = {};
+      if (brand.logo.sdfTexture && brand.logo.textureId) {
+        const sdfNode = brand.logo.sdfNode as { depth: number; aspectRatio: number };
+        textures[brand.logo.textureId] = {
+          data: brand.logo.sdfTexture,
+          width: brand.logo.width,
+          height: brand.logo.height,
+          depth: sdfNode.depth ?? 0.5,
+          aspectRatio: sdfNode.aspectRatio ?? 1,
+        };
+      }
+
+      const blob = await exportPNG(fieldRoot, {
+        width: aspect >= 1 ? 2048 : (aspect > 0 ? Math.round(2048 * aspect) : 2048),
+        height: aspect >= 1 ? Math.round(2048 / aspect) : 2048,
+        background: colorBackground,
+        colorPrimary: colors.primary,
+        colorAccent: colors.accent,
+        textures,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${brandName.toLowerCase().replace(/\s+/g, '-')}-${activeContext}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PNG export failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   async function handleExportSVG() {
     setExportMenuOpen(false);
-    if (!brand) return;
-    const fieldRoot = brand.field(activeContext);
-    const { exportSVG } = await import('@bigpuddle/dot-engine-export');
-    const result = exportSVG(fieldRoot, {
-      width: 1200,
-      height: aspect > 0 ? Math.round(1200 / aspect) : 1200,
-      background: colorBackground,
-    });
-    const blob = new Blob([result.svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${brandName.toLowerCase().replace(/\s+/g, '-')}-${activeContext}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!brand || isExporting) return;
+    setIsExporting(true);
+    try {
+      const fieldRoot = brand.field(activeContext);
+      const { exportSVG } = await import('@bigpuddle/dot-engine-export');
+      const result = exportSVG(fieldRoot, {
+        width: 1200,
+        height: aspect > 0 ? Math.round(1200 / aspect) : 1200,
+        background: colorBackground,
+      });
+      const blob = new Blob([result.svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${brandName.toLowerCase().replace(/\s+/g, '-')}-${activeContext}.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('SVG export failed:', err);
+      alert('SVG export is only available for geometric SDF shapes. Text and image logos require PNG export.');
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   function handleExportJSON() {
@@ -115,13 +147,17 @@ export function BottomBar({
       </button>
 
       {/* Status */}
-      <span className="bottom-status">dot-engine v0.2.0</span>
+      <span className="bottom-status">dot-engine v{VERSION}</span>
 
       {/* Right-side actions */}
       <div className="bottom-bar-actions">
         <div ref={exportRef} style={{ position: 'relative', display: 'inline-block' }}>
-          <button className="action-btn" onClick={() => setExportMenuOpen(!exportMenuOpen)}>
-            Export
+          <button
+            className="action-btn"
+            onClick={() => !isExporting && setExportMenuOpen(!exportMenuOpen)}
+            disabled={isExporting}
+          >
+            {isExporting ? 'Exporting...' : 'Export'}
           </button>
           {exportMenuOpen && (
             <div className="export-menu" style={{

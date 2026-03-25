@@ -44,6 +44,22 @@ export interface LeftPanelProps {
   advancedSettings: VibeSettings;
   setAdvancedSettings: (s: VibeSettings) => void;
 
+  // Font weight
+  fontWeight: number;
+  setFontWeight: (w: number) => void;
+
+  // Color mode
+  colorMode: 'depth' | 'position' | 'noise' | 'uniform';
+  setColorMode: (m: 'depth' | 'position' | 'noise' | 'uniform') => void;
+
+  // Opacity
+  opacityMin: number;
+  setOpacityMin: (v: number) => void;
+  opacityMax: number;
+  setOpacityMax: (v: number) => void;
+  opacityMode: 'depth' | 'edgeGlow' | 'uniform';
+  setOpacityMode: (m: 'depth' | 'edgeGlow' | 'uniform') => void;
+
   // Image
   hasImage: boolean;
   imageResolution: number;
@@ -72,6 +88,16 @@ export function LeftPanel({
   setIntensity,
   advancedSettings,
   setAdvancedSettings,
+  fontWeight,
+  setFontWeight,
+  colorMode,
+  setColorMode,
+  opacityMin,
+  setOpacityMin,
+  opacityMax,
+  setOpacityMax,
+  opacityMode,
+  setOpacityMode,
   hasImage,
   imageResolution,
   setImageResolution,
@@ -157,19 +183,29 @@ export function LeftPanel({
 
         {/* Font dropdown (text mode only) */}
         {logoMode === 'text' && (
-          <div className="input-row" style={{ marginBottom: 8 }}>
-            <span className="panel-label">Font</span>
-            <select
-              className="panel-select"
-              value={logoFont}
-              onChange={e => setLogoFont(e.target.value)}
-              aria-label="Logo font"
-            >
-              {FONTS.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="input-row" style={{ marginBottom: 8 }}>
+              <span className="panel-label">Font</span>
+              <select
+                className="panel-select"
+                value={logoFont}
+                onChange={e => setLogoFont(e.target.value)}
+                aria-label="Logo font"
+              >
+                {FONTS.map(f => (
+                  <option key={f.value} value={f.value}>{f.label}</option>
+                ))}
+              </select>
+            </div>
+            <Slider
+              label="Weight"
+              value={fontWeight}
+              onChange={v => setFontWeight(Math.round(v))}
+              accent="var(--accent-blue)"
+              min={100}
+              max={900}
+            />
+          </>
         )}
 
         {/* Color swatches */}
@@ -178,6 +214,23 @@ export function LeftPanel({
           <ColorSwatch color={colorPrimary} onChange={setColorPrimary} label="primary" />
           <ColorSwatch color={colorAccent} onChange={setColorAccent} label="accent" />
           <ColorSwatch color={colorBackground} onChange={setColorBackground} label="bg" />
+        </div>
+
+        {/* Color mode */}
+        <div className="input-row" style={{ marginTop: 10, marginBottom: 4 }}>
+          <span className="panel-label">Color Mode</span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['depth', 'position', 'noise', 'uniform'] as const).map(mode => (
+              <button
+                key={mode}
+                className={`context-tab${colorMode === mode ? ' active' : ''}`}
+                onClick={() => setColorMode(mode)}
+                style={{ fontSize: 9, padding: '3px 8px' }}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -363,6 +416,39 @@ export function LeftPanel({
                   {m}
                 </button>
               ))}
+            </div>
+
+            {/* Opacity */}
+            <div className="panel-label" style={{ marginTop: 10, marginBottom: 4 }}>Opacity</div>
+            <Slider
+              label="Opacity min"
+              value={opacityMin}
+              onChange={setOpacityMin}
+              accent="var(--accent-blue)"
+              min={0}
+              max={1}
+            />
+            <Slider
+              label="Opacity max"
+              value={opacityMax}
+              onChange={setOpacityMax}
+              accent="var(--accent-blue)"
+              min={0}
+              max={1}
+            />
+            <div className="input-row" style={{ marginBottom: 8 }}>
+              <span className="panel-label">Opacity Mode</span>
+              <div className="mini-pills">
+                {(['depth', 'edgeGlow', 'uniform'] as const).map(m => (
+                  <button
+                    key={m}
+                    className={`mini-pill${opacityMode === m ? ' active' : ''}`}
+                    onClick={() => setOpacityMode(m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

@@ -35,6 +35,7 @@ export function Slider({ label, value, onChange, accent, min = 0, max = 1 }: Sli
           value={value}
           onChange={e => onChange(parseFloat(e.target.value))}
           style={{ cursor: 'pointer' }}
+          aria-label={label}
         />
       </div>
     </div>

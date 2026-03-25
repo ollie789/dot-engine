@@ -21,7 +21,21 @@ export function App() {
   const [imageData, setImageData] = useState<ImageFieldData | null>(null);
   const [imageResolution, setImageResolution] = useState(128);
   const [colorFromImage, setColorFromImage] = useState(true);
+  const [fontWeight, setFontWeight] = useState(600);
   const [activeFormat, setActiveFormat] = useState<OutputFormat>(OUTPUT_FORMATS[0]);
+
+  // Color mode and opacity
+  const [colorMode, setColorMode] = useState<'depth' | 'position' | 'noise' | 'uniform'>('depth');
+  const [opacityMin, setOpacityMin] = useState(0.3);
+  const [opacityMax, setOpacityMax] = useState(1.0);
+  const [opacityMode, setOpacityMode] = useState<'depth' | 'edgeGlow' | 'uniform'>('depth');
+
+  // Clear image data when switching back to text mode
+  useEffect(() => {
+    if (logoMode === 'text') {
+      setImageData(null);
+    }
+  }, [logoMode]);
 
   // Vibe system
   const [activeVibe, setActiveVibe] = useState<Vibe>(VIBES.find(v => v.name === 'organic')!);
@@ -74,7 +88,7 @@ export function App() {
       try {
         const b = await defineBrand({
           name,
-          logo: text(name, { font: logoFont, weight: 900 }),
+          logo: text(name, { font: logoFont, weight: fontWeight }),
           colors: {
             primary: colorPrimary,
             accent: colorAccent,
@@ -101,6 +115,7 @@ export function App() {
   }, [
     name,
     logoFont,
+    fontWeight,
     colorPrimary,
     colorAccent,
     colorBackground,
@@ -111,7 +126,7 @@ export function App() {
     advancedSettings.motionSpeed,
   ]);
 
-  // Context options include shape transforms and dot sizes
+  // Context options include shape transforms, dot sizes, color mode, and opacity
   const contextOptions = useMemo(() => ({
     twist: advancedSettings.twist || undefined,
     bend: advancedSettings.bend || undefined,
@@ -120,7 +135,11 @@ export function App() {
     dotSizeMin: advancedSettings.dotSizeMin,
     dotSizeMax: advancedSettings.dotSizeMax,
     edgeSoftness: advancedSettings.edgeSoftness,
-  }), [advancedSettings]);
+    colorMode,
+    opacityMin,
+    opacityMax,
+    opacityMode,
+  }), [advancedSettings, colorMode, opacityMin, opacityMax, opacityMode]);
 
   const config = {
     name,
@@ -183,6 +202,16 @@ export function App() {
           setImageResolution={setImageResolution}
           colorFromImage={colorFromImage}
           setColorFromImage={setColorFromImage}
+          fontWeight={fontWeight}
+          setFontWeight={setFontWeight}
+          colorMode={colorMode}
+          setColorMode={setColorMode}
+          opacityMin={opacityMin}
+          setOpacityMin={setOpacityMin}
+          opacityMax={opacityMax}
+          setOpacityMax={setOpacityMax}
+          opacityMode={opacityMode}
+          setOpacityMode={setOpacityMode}
         />
 
         {/* Canvas container */}
@@ -196,6 +225,7 @@ export function App() {
             isLoading={isLoading}
             particleMode={advancedSettings.particleMode}
             imageData={imageData}
+            colorFromImage={colorFromImage}
             format={activeFormat}
             contextOptions={contextOptions}
           />
