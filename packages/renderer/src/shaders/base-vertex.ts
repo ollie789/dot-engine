@@ -51,7 +51,7 @@ void main() {
   vImgUv = vec2(0.0);
 {{IMAGE_FIELD}}
   float d = {{SDF_ROOT}}(displaced);
-  float edgeSoftness = 0.05;
+  float edgeSoftness = {{EDGE_SOFTNESS}};
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
   float dotScale = {{SIZE_EXPR}} * imgScale;
   vec3 scaledPos = position * field * dotScale;

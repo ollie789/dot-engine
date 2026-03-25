@@ -73,7 +73,7 @@ fn main(@builtin(global_invocation_id) id: vec3u) {
 {{DISPLACEMENT}}
 
   let d = {{SDF_ROOT}}(pos);
-  let edgeSoftness = 0.05;
+  let edgeSoftness = {{EDGE_SOFTNESS}};
   let field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
 
   // GPU culling: skip invisible dots
@@ -240,7 +240,8 @@ export function compileFieldWgsl(root: FieldRoot): CompiledWgslField {
     .replace('{{NOISE_FUNCTIONS}}', noiseFunctions)
     .replace('{{SDF_FUNCTIONS}}', sdfFunctions)
     .replace('{{SDF_ROOT}}', rootFn)
-    .replace('{{DISPLACEMENT}}', displacementLines);
+    .replace('{{DISPLACEMENT}}', displacementLines)
+    .replace('{{EDGE_SOFTNESS}}', f(root.edgeSoftness ?? 0.05));
 
   // Extract grid metadata
   const resolution = gridNode.resolution;

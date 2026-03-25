@@ -384,6 +384,7 @@ export type FieldChildNode =
 export interface FieldRoot extends BaseNode {
   readonly type: 'field';
   readonly children: readonly FieldChildNode[];
+  readonly edgeSoftness?: number;
 }
 
 // ---------------------------------------------------------------------------

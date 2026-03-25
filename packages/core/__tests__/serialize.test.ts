@@ -3,7 +3,7 @@ import { _resetIds, FieldRoot } from '../src/nodes/types.js';
 import { field } from '../src/nodes/field.js';
 import { shape } from '../src/nodes/shape.js';
 import { grid } from '../src/nodes/grid.js';
-import { torus } from '../src/sdf/primitives.js';
+import { torus, sphere } from '../src/sdf/primitives.js';
 import { smoothUnion } from '../src/sdf/boolean.js';
 import { translate } from '../src/sdf/transforms.js';
 import { toJSON, fromJSON } from '../src/serialize.js';
@@ -74,5 +74,15 @@ describe('toJSON / fromJSON round-trip', () => {
     for (const p of testPoints) {
       expect(evaluateSdf(restSdf, p)).toBeCloseTo(evaluateSdf(origSdf, p), 5);
     }
+  });
+
+  it('preserves edgeSoftness through round-trip', () => {
+    const root: FieldRoot = {
+      ...field(shape(sphere(1)), grid({ type: 'uniform', resolution: [10, 10, 10] })),
+      edgeSoftness: 0.08,
+    };
+    const json = toJSON(root);
+    const restored = fromJSON<FieldRoot>(json);
+    expect(restored.edgeSoftness).toBe(0.08);
   });
 });

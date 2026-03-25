@@ -11,6 +11,7 @@ export interface BrandMomentProps {
   className?: string;
   style?: React.CSSProperties;
   interactive?: boolean;
+  onError?: (error: Error) => void;
 }
 
 export function BrandMoment({
@@ -21,6 +22,7 @@ export function BrandMoment({
   className,
   style,
   interactive = true,
+  onError,
 }: BrandMomentProps) {
   const fromField = useMemo(
     () => (context === 'transition' && options?.from ? brand.field(options.from, options) : null),
@@ -52,6 +54,7 @@ export function BrandMoment({
             background="transparent"
             lod={lod}
             controls={false}
+            onError={onError}
           />
         </div>
         <div style={{ position: 'absolute', inset: 0, opacity: progress }}>
@@ -62,6 +65,7 @@ export function BrandMoment({
             background={brand.config.colors.background ?? '#0a0a0a'}
             lod={lod}
             controls={interactive}
+            onError={onError}
           />
         </div>
       </div>
@@ -76,6 +80,7 @@ export function BrandMoment({
       background={brand.config.colors.background ?? '#0a0a0a'}
       lod={lod}
       controls={interactive}
+      onError={onError}
       className={className}
       style={style}
     />

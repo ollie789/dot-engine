@@ -79,4 +79,26 @@ describe('compileField', () => {
     expect(compiled.fragmentShader).toContain('void main()');
     expect(compiled.fragmentShader).toContain('gl_FragColor');
   });
+
+  it('uses default edgeSoftness 0.05 when not specified', () => {
+    const root = field(
+      shape(sphere(1)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    const compiled = compileField(root);
+    expect(compiled.vertexShader).toContain('float edgeSoftness = 0.05;');
+  });
+
+  it('uses custom edgeSoftness when specified on FieldRoot', () => {
+    const root = {
+      ...field(
+        shape(sphere(1)),
+        grid({ type: 'uniform', resolution: [10, 10, 10] }),
+      ),
+      edgeSoftness: 0.08,
+    };
+    const compiled = compileField(root);
+    expect(compiled.vertexShader).toContain('float edgeSoftness = 0.08;');
+    expect(compiled.vertexShader).not.toContain('float edgeSoftness = 0.05;');
+  });
 });

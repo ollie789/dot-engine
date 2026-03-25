@@ -380,7 +380,8 @@ export function compileField(root: FieldRoot): CompiledField {
     .replaceAll('{{SDF_ROOT}}', rootFn)
     .replace('{{DISPLACEMENT}}', displacementLines)
     .replace('{{IMAGE_FIELD}}', imageFieldCode)
-    .replace('{{SIZE_EXPR}}', sizeExpr);
+    .replace('{{SIZE_EXPR}}', sizeExpr)
+    .replace('{{EDGE_SOFTNESS}}', f(root.edgeSoftness ?? 0.05));
 
   // Fragment shader: generate color/opacity logic
   const colorLogic =

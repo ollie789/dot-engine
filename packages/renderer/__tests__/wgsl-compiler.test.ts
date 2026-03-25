@@ -158,6 +158,28 @@ describe('compileFieldWgsl', () => {
     expect(compiled.computeShader).toContain('array<DotOutput>');
   });
 
+  it('uses default edgeSoftness 0.05 when not specified', () => {
+    const root = field(
+      shape(sphere(1)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    const compiled = compileFieldWgsl(root);
+    expect(compiled.computeShader).toContain('let edgeSoftness = 0.05;');
+  });
+
+  it('uses custom edgeSoftness when specified on FieldRoot', () => {
+    const root = {
+      ...field(
+        shape(sphere(1)),
+        grid({ type: 'uniform', resolution: [10, 10, 10] }),
+      ),
+      edgeSoftness: 0.03,
+    };
+    const compiled = compileFieldWgsl(root);
+    expect(compiled.computeShader).toContain('let edgeSoftness = 0.03;');
+    expect(compiled.computeShader).not.toContain('let edgeSoftness = 0.05;');
+  });
+
   it('render shaders are returned', () => {
     const f = field(
       shape(sphere(0.5)),

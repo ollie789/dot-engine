@@ -39,5 +39,5 @@ export function buildDataField(
     );
   }
 
-  return field(...children);
+  return { ...field(...children), edgeSoftness: params.edgeSoftness };
 }

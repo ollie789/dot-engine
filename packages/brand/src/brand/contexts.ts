@@ -70,7 +70,8 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
   }
-  return field(...children);
+  const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
+  return { ...field(...children), edgeSoftness };
 }
 
 export function buildHeroField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
@@ -105,7 +106,8 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
   }
-  return field(...children);
+  const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
+  return { ...field(...children), edgeSoftness };
 }
 
 export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot {
@@ -123,7 +125,7 @@ export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot
     ...motionToDisplacements('breathe', speed, params.displacementAmount, false),
     animate({ speed }),
   ];
-  return field(...children);
+  return { ...field(...children), edgeSoftness: params.edgeSoftness };
 }
 
 
@@ -151,5 +153,6 @@ export function buildBannerField(brand: Brand, params: MappedParams, options?: C
   if (options?.dotSizeMin !== undefined || options?.dotSizeMax !== undefined) {
     children.push(size({ min: options.dotSizeMin ?? 0.002, max: options.dotSizeMax ?? 0.02 }));
   }
-  return field(...children);
+  const edgeSoftness = options?.edgeSoftness ?? params.edgeSoftness;
+  return { ...field(...children), edgeSoftness };
 }
