@@ -19,3 +19,5 @@ export {
   PARTICLE_STRIDE,
   type ParticlePoolState,
 } from './particles/particlePool.js';
+export { applyComputeResults, DOT_STRIDE } from './compute/computeBridge.js';
+export { initWebGPUCompute, dispatchCompute, readResults, destroyCompute, type WebGPUComputeContext } from './compute/WebGPUCompute.js';

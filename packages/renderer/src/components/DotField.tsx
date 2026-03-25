@@ -3,6 +3,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { FieldRoot, AnimateNode, DisplaceNode, ImageFieldNode } from '@bigpuddle/dot-engine-core';
 import { compileField } from '../compiler/compiler.js';
+import { compileFieldWgsl } from '../compiler/wgsl-compiler.js';
+import { initWebGPUCompute, dispatchCompute, readResults, destroyCompute, type WebGPUComputeContext } from '../compute/WebGPUCompute.js';
+import { applyComputeResults } from '../compute/computeBridge.js';
 import { computeLodTier, type LodOverride, type LodTier } from './LodBenchmark.js';
 
 export interface DotFieldProps {
@@ -60,14 +63,6 @@ export function DotField({
     backend === 'webgpu' ||
     (backend === 'auto' && typeof navigator !== 'undefined' && 'gpu' in navigator);
 
-  const warnedRef = useRef(false);
-  useEffect(() => {
-    if (useWebGpu && !warnedRef.current) {
-      console.warn('[dot-engine] WebGPU backend not yet implemented. Falling back to WebGL2.');
-      warnedRef.current = true;
-    }
-  }, [useWebGpu]);
-
   const { gl, scene } = useThree();
 
   // Compute LOD tier
@@ -92,6 +87,16 @@ export function DotField({
 
   // Compile shader — only when field structure changes
   const compiled = useMemo(() => compileField(effectiveField), [effectiveField]);
+
+  // Compile WGSL shader for WebGPU compute path
+  const compiledWgsl = useMemo(() => {
+    if (!useWebGpu) return null;
+    try {
+      return compileFieldWgsl(effectiveField);
+    } catch {
+      return null;
+    }
+  }, [effectiveField, useWebGpu]);
 
   const animateSpeed = useMemo(() => {
     const animateNode = fieldDesc.children.find((c): c is AnimateNode => c.type === 'animate');
@@ -226,13 +231,38 @@ export function DotField({
     }
   }, [textures, imageTextures, imageFieldNode, compiled.extraUniforms, material]);
 
+  // WebGPU compute context
+  const computeCtxRef = useRef<WebGPUComputeContext | null>(null);
+  const computeResultsRef = useRef<Float32Array | null>(null);
+
+  useEffect(() => {
+    if (!compiledWgsl) {
+      computeCtxRef.current = null;
+      return;
+    }
+    let destroyed = false;
+    initWebGPUCompute(compiledWgsl.computeShader, totalDots).then(ctx => {
+      if (destroyed) { destroyCompute(ctx); return; }
+      computeCtxRef.current = ctx;
+    }).catch(err => {
+      console.warn('[dot-engine] WebGPU compute init failed, using WebGL fallback:', err.message);
+    });
+    return () => {
+      destroyed = true;
+      if (computeCtxRef.current) {
+        destroyCompute(computeCtxRef.current);
+        computeCtxRef.current = null;
+      }
+    };
+  }, [compiledWgsl, totalDots]);
+
   // Cached color refs to avoid per-frame allocations
   const colorPrimRef = useRef(colorPrimary);
   const colorAccRef = useRef(colorAccent);
   const parsedPrimary = useRef(new THREE.Color(colorPrimary));
   const parsedAccent = useRef(new THREE.Color(colorAccent));
 
-  // Per-frame updates — colors, time, pointer (no allocations)
+  // Per-frame updates — colors, time, pointer, compute (no allocations)
   useFrame(({ clock }) => {
     const u = material.uniforms;
     u.uTime.value = clock.elapsedTime * animateSpeed;
@@ -246,12 +276,43 @@ export function DotField({
       colorAccRef.current = colorAccent;
       parsedAccent.current.set(colorAccent);
     }
+
+    // WebGPU compute path: dispatch + apply results
+    const ctx = computeCtxRef.current;
+    if (ctx) {
+      // Read previous frame's results (fire-and-forget — resolved by next frame)
+      readResults(ctx).then(data => {
+        if (data) computeResultsRef.current = data;
+      });
+
+      // Apply most recent results to mesh
+      const mesh = meshRef.current;
+      if (mesh && computeResultsRef.current) {
+        const matrices = mesh.instanceMatrix.array as Float32Array;
+        const visibleCount = applyComputeResults(computeResultsRef.current, matrices, ctx.totalDots);
+        mesh.count = visibleCount;
+        mesh.instanceMatrix.needsUpdate = true;
+      }
+
+      // Dispatch current frame's compute
+      const primary = parsedPrimary.current;
+      const accent = parsedAccent.current;
+      dispatchCompute(
+        ctx,
+        clock.elapsedTime * animateSpeed,
+        compiled.resolution,
+        compiled.bounds,
+        [primary.r, primary.g, primary.b],
+        [accent.r, accent.g, accent.b],
+      );
+    }
+
+    // WebGL path: update uniforms (always runs — needed even with compute for the shader material)
     const prim = u.uColorPrimary.value as THREE.Vector3;
     const acc = u.uColorAccent.value as THREE.Vector3;
     prim.set(parsedPrimary.current.r, parsedPrimary.current.g, parsedPrimary.current.b);
     acc.set(parsedAccent.current.r, parsedAccent.current.g, parsedAccent.current.b);
 
-    // Pointer
     if (pointerPosition) {
       (u.uPointer.value as THREE.Vector2).set(pointerPosition.x, pointerPosition.y);
     }
