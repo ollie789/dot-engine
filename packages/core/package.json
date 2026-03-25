@@ -1,6 +1,6 @@
 {
   "name": "@bigpuddle/dot-engine-core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Pure TypeScript DAG authoring API for 3D dot-field rendering — SDFs, displacement, animation, color",
   "license": "MIT",
   "author": "bigpuddle",

@@ -1,6 +1,6 @@
 {
   "name": "@bigpuddle/dot-engine-brand",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Brand identity layer for dot-engine — defineBrand, logo import, personality, contexts, particles",
   "license": "MIT",
   "author": "bigpuddle",

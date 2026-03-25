@@ -1,6 +1,6 @@
 {
   "name": "@bigpuddle/dot-engine-renderer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "React Three Fiber rendering layer for dot-engine — GLSL/WGSL compilers, DotField components, LOD, hooks",
   "license": "MIT",
   "author": "bigpuddle",
