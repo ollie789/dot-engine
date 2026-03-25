@@ -26,10 +26,22 @@ function hexToVec3(hex: string): THREE.Vector3 {
   return new THREE.Vector3(c.r, c.g, c.b);
 }
 
-function geometryForComplexity(dotComplexity: number): THREE.BufferGeometry {
-  if (dotComplexity >= 8) return new THREE.IcosahedronGeometry(1, 2); // 80 tris — smooth sphere
-  if (dotComplexity >= 2) return new THREE.IcosahedronGeometry(1, 1); // 20 tris — decent sphere
-  return new THREE.IcosahedronGeometry(1, 0);                         // 8 tris — minimal sphere
+// Pre-allocate all 3 geometry variants
+function createGeometries(): [THREE.BufferGeometry, THREE.BufferGeometry, THREE.BufferGeometry] {
+  return [
+    new THREE.IcosahedronGeometry(1, 0), // low: 8 tris
+    new THREE.IcosahedronGeometry(1, 1), // medium: 20 tris
+    new THREE.IcosahedronGeometry(1, 2), // high: 80 tris
+  ];
+}
+
+function geometryForComplexity(
+  geos: [THREE.BufferGeometry, THREE.BufferGeometry, THREE.BufferGeometry],
+  dotComplexity: number,
+): THREE.BufferGeometry {
+  if (dotComplexity >= 8) return geos[2];
+  if (dotComplexity >= 2) return geos[1];
+  return geos[0];
 }
 
 export function DotField({
@@ -46,59 +58,43 @@ export function DotField({
   // WebGPU detection and stub
   const useWebGpu =
     backend === 'webgpu' ||
-    (backend === 'auto' &&
-      typeof navigator !== 'undefined' &&
-      'gpu' in navigator);
+    (backend === 'auto' && typeof navigator !== 'undefined' && 'gpu' in navigator);
 
   const warnedRef = useRef(false);
   useEffect(() => {
     if (useWebGpu && !warnedRef.current) {
-      console.warn(
-        '[dot-engine] WebGPU backend: compute shader compiled but runtime not yet implemented. Falling back to WebGL2.',
-      );
+      console.warn('[dot-engine] WebGPU backend not yet implemented. Falling back to WebGL2.');
       warnedRef.current = true;
     }
   }, [useWebGpu]);
 
-  const meshRef = useRef<THREE.InstancedMesh>(null!);
-  const { gl } = useThree();
+  const { gl, scene } = useThree();
 
   // Compute LOD tier
   const lodTier = useMemo((): LodTier => {
-    if (lod !== 'auto') {
-      return computeLodTier(0, 1, lod);
-    }
-    // GPU heuristic: use pixel ratio + max texture size
+    if (lod !== 'auto') return computeLodTier(0, 1, lod);
     const pixelRatio = gl.getPixelRatio();
     const isHighEnd = pixelRatio >= 2 && gl.capabilities.maxTextureSize >= 8192;
     const isMobile = pixelRatio >= 2 && gl.capabilities.maxTextureSize <= 4096;
-
-    if (isHighEnd) {
-      return computeLodTier(1, 10000); // fast GPU
-    } else if (isMobile) {
-      return computeLodTier(14, 10000); // slow/mobile GPU
-    } else {
-      return computeLodTier(5, 10000); // mid GPU
-    }
+    if (isHighEnd) return computeLodTier(1, 10000);
+    if (isMobile) return computeLodTier(14, 10000);
+    return computeLodTier(5, 10000);
   }, [lod, gl]);
 
-  // When LOD says to skip flow field, strip flowField3D displacement nodes
+  // Strip flow field when LOD says to
   const effectiveField = useMemo(() => {
     if (lodTier.includeFlowField) return fieldDesc;
-    // Strip flow field displacement nodes
     const filtered = fieldDesc.children.filter(
       (c) => !(c.type === 'displace' && (c as DisplaceNode).noise.type === 'flowField3D'),
     );
     return { ...fieldDesc, children: filtered };
   }, [fieldDesc, lodTier.includeFlowField]);
 
+  // Compile shader — only when field structure changes
   const compiled = useMemo(() => compileField(effectiveField), [effectiveField]);
 
-  // Extract AnimateNode speed from field children
   const animateSpeed = useMemo(() => {
-    const animateNode = fieldDesc.children.find(
-      (c): c is AnimateNode => c.type === 'animate',
-    );
+    const animateNode = fieldDesc.children.find((c): c is AnimateNode => c.type === 'animate');
     return animateNode?.speed ?? 1.0;
   }, [fieldDesc]);
 
@@ -107,7 +103,6 @@ export function DotField({
     [compiled.totalDots, lodTier.maxDots],
   );
 
-  // Find the ImageFieldNode (if any) in the field children
   const imageFieldNode = useMemo(
     () =>
       fieldDesc.children.find(
@@ -116,6 +111,16 @@ export function DotField({
     [fieldDesc],
   );
 
+  // Max capacity for the mesh — never changes during component lifetime
+  const maxCapacity = lodTier.maxDots;
+
+  // Pre-allocate all 3 geometry variants
+  const geometriesRef = useRef<[THREE.BufferGeometry, THREE.BufferGeometry, THREE.BufferGeometry] | null>(null);
+  if (!geometriesRef.current) {
+    geometriesRef.current = createGeometries();
+  }
+
+  // Material — ONLY depends on compiled (shader source)
   const material = useMemo(() => {
     const uniforms: Record<string, { value: unknown }> = {
       uTime: { value: 0 },
@@ -127,23 +132,16 @@ export function DotField({
       uPointerStrength: { value: 0 },
     };
 
-    if (textures && compiled.extraUniforms) {
+    // Create texture uniform slots (will be filled dynamically)
+    if (compiled.extraUniforms) {
       for (const [tid] of Object.entries(compiled.extraUniforms)) {
-        if (tid === '__imageField__') continue;
-        const tex = textures[tid];
-        if (tex) {
-          uniforms[`uLogoSDF_${tid}`] = { value: tex.texture };
-          uniforms[`uLogoDepth_${tid}`] = { value: tex.depth };
-          uniforms[`uLogoAspect_${tid}`] = { value: tex.aspectRatio };
+        if (tid === '__imageField__') {
+          uniforms['uImageField'] = { value: null };
+        } else {
+          uniforms[`uLogoSDF_${tid}`] = { value: null };
+          uniforms[`uLogoDepth_${tid}`] = { value: 0 };
+          uniforms[`uLogoAspect_${tid}`] = { value: 1 };
         }
-      }
-    }
-
-    // Bind image field texture if present
-    if (imageFieldNode && imageTextures) {
-      const imgTex = imageTextures[imageFieldNode.textureId];
-      if (imgTex) {
-        uniforms['uImageField'] = { value: imgTex };
       }
     }
 
@@ -155,34 +153,111 @@ export function DotField({
       depthWrite: true,
       depthTest: true,
     });
-  }, [compiled, colorPrimary, colorAccent, textures, imageFieldNode, imageTextures]);
+  }, [compiled]); // <-- ONLY compiled
 
-  const geometry = useMemo(
-    () => geometryForComplexity(lodTier.dotComplexity),
-    [lodTier.dotComplexity],
-  );
-
+  // Dispose material when it changes
   useEffect(() => {
     return () => { material.dispose(); };
   }, [material]);
 
+  // Dispose geometries on unmount
   useEffect(() => {
-    return () => { geometry.dispose(); };
-  }, [geometry]);
+    return () => {
+      if (geometriesRef.current) {
+        geometriesRef.current.forEach(g => g.dispose());
+      }
+    };
+  }, []);
 
-  useFrame(({ clock }) => {
-    material.uniforms.uTime.value = clock.elapsedTime * animateSpeed;
-    if (pointerPosition) {
-      material.uniforms.uPointer.value.set(pointerPosition.x, pointerPosition.y);
+  // Create the instanced mesh ONCE with max capacity
+  const meshRef = useRef<THREE.InstancedMesh | null>(null);
+  useEffect(() => {
+    const geo = geometryForComplexity(geometriesRef.current!, lodTier.dotComplexity);
+    const mesh = new THREE.InstancedMesh(geo, material, maxCapacity);
+    mesh.count = totalDots;
+    mesh.frustumCulled = false;
+    meshRef.current = mesh;
+    scene.add(mesh);
+    return () => {
+      scene.remove(mesh);
+      mesh.dispose();
+      meshRef.current = null;
+    };
+  }, [scene, maxCapacity]); // Only recreate if scene or max capacity changes
+
+  // Swap geometry when LOD complexity changes
+  useEffect(() => {
+    if (meshRef.current && geometriesRef.current) {
+      meshRef.current.geometry = geometryForComplexity(geometriesRef.current, lodTier.dotComplexity);
     }
-    material.uniforms.uPointerStrength.value = pointerStrength ?? 0;
+  }, [lodTier.dotComplexity]);
+
+  // Swap material when shader recompiles
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.material = material;
+    }
+  }, [material]);
+
+  // Update mesh.count when totalDots changes
+  useEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.count = totalDots;
+    }
+  }, [totalDots]);
+
+  // Sync texture uniforms dynamically
+  useEffect(() => {
+    if (!compiled.extraUniforms) return;
+    for (const [tid] of Object.entries(compiled.extraUniforms)) {
+      if (tid === '__imageField__') {
+        const imgTex = imageFieldNode && imageTextures ? imageTextures[imageFieldNode.textureId] : null;
+        if (material.uniforms['uImageField']) {
+          material.uniforms['uImageField'].value = imgTex ?? null;
+        }
+      } else if (textures) {
+        const tex = textures[tid];
+        if (tex && material.uniforms[`uLogoSDF_${tid}`]) {
+          material.uniforms[`uLogoSDF_${tid}`].value = tex.texture;
+          material.uniforms[`uLogoDepth_${tid}`].value = tex.depth;
+          material.uniforms[`uLogoAspect_${tid}`].value = tex.aspectRatio;
+        }
+      }
+    }
+  }, [textures, imageTextures, imageFieldNode, compiled.extraUniforms, material]);
+
+  // Cached color refs to avoid per-frame allocations
+  const colorPrimRef = useRef(colorPrimary);
+  const colorAccRef = useRef(colorAccent);
+  const parsedPrimary = useRef(new THREE.Color(colorPrimary));
+  const parsedAccent = useRef(new THREE.Color(colorAccent));
+
+  // Per-frame updates — colors, time, pointer (no allocations)
+  useFrame(({ clock }) => {
+    const u = material.uniforms;
+    u.uTime.value = clock.elapsedTime * animateSpeed;
+
+    // Update colors directly — only re-parse when hex string changes
+    if (colorPrimRef.current !== colorPrimary) {
+      colorPrimRef.current = colorPrimary;
+      parsedPrimary.current.set(colorPrimary);
+    }
+    if (colorAccRef.current !== colorAccent) {
+      colorAccRef.current = colorAccent;
+      parsedAccent.current.set(colorAccent);
+    }
+    const prim = u.uColorPrimary.value as THREE.Vector3;
+    const acc = u.uColorAccent.value as THREE.Vector3;
+    prim.set(parsedPrimary.current.r, parsedPrimary.current.g, parsedPrimary.current.b);
+    acc.set(parsedAccent.current.r, parsedAccent.current.g, parsedAccent.current.b);
+
+    // Pointer
+    if (pointerPosition) {
+      (u.uPointer.value as THREE.Vector2).set(pointerPosition.x, pointerPosition.y);
+    }
+    u.uPointerStrength.value = pointerStrength ?? 0;
   });
 
-  return (
-    <instancedMesh
-      ref={meshRef}
-      args={[geometry, material, totalDots]}
-      frustumCulled={false}
-    />
-  );
+  // No JSX mesh — managed imperatively
+  return null;
 }
