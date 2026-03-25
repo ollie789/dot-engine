@@ -6,6 +6,8 @@ export interface ExportPNGOptions {
   width: number;
   height: number;
   background?: string;
+  colorPrimary?: string;
+  colorAccent?: string;
 }
 
 export async function exportPNG(
@@ -39,8 +41,8 @@ export async function exportPNG(
       uTime: { value: 0 },
       uResolution: { value: new THREE.Vector3(...compiled.resolution) },
       uBounds: { value: new THREE.Vector3(...compiled.bounds) },
-      uColorPrimary: { value: new THREE.Color('#4a9eff') },
-      uColorAccent: { value: new THREE.Color('#ff6b4a') },
+      uColorPrimary: { value: new THREE.Color(options.colorPrimary ?? '#4a9eff') },
+      uColorAccent: { value: new THREE.Color(options.colorAccent ?? '#ff6b4a') },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerStrength: { value: 0 },
     },
@@ -63,6 +65,7 @@ export async function exportPNG(
   });
 
   // Cleanup
+  scene.remove(mesh);
   renderer.dispose();
   geometry.dispose();
   material.dispose();

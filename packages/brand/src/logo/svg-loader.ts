@@ -3,16 +3,15 @@
  * Loads SVG via Image + Canvas, extracts alpha mask as Uint8Array.
  */
 
-export interface MaskResult {
-  mask: Uint8Array;
-  width: number;
-  height: number;
-}
+import type { MaskResult } from './mask-types.js';
+export type { MaskResult } from './mask-types.js';
 
 export function loadSvgToMask(source: string, resolution: number): Promise<MaskResult> {
   return new Promise((resolve, reject) => {
+    let objectUrl: string | null = null;
     const img = new Image();
     img.onload = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
       const aspectRatio = img.naturalWidth / img.naturalHeight;
       const width = resolution;
       const height = Math.round(resolution / aspectRatio);
@@ -35,12 +34,16 @@ export function loadSvgToMask(source: string, resolution: number): Promise<MaskR
       }
       resolve({ mask, width, height });
     };
-    img.onerror = () => reject(new Error(`Failed to load SVG: ${source}`));
+    img.onerror = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      reject(new Error(`Failed to load SVG: ${source}`));
+    };
 
     // Encode SVG as data URL if it's raw SVG markup
     if (source.trimStart().startsWith('<')) {
       const blob = new Blob([source], { type: 'image/svg+xml' });
-      img.src = URL.createObjectURL(blob);
+      objectUrl = URL.createObjectURL(blob);
+      img.src = objectUrl;
     } else {
       img.src = source;
     }

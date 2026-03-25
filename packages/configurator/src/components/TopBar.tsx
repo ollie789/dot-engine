@@ -85,7 +85,7 @@ export function TopBar({
           </div>
         )}
         <div className="meta-item">
-          <span className="meta-value">v0.9</span>
+          <span className="meta-value">v0.2.0</span>
         </div>
       </div>
     </div>

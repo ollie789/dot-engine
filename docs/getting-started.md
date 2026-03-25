@@ -9,13 +9,13 @@ This guide walks through building a complete dot-engine integration from scratch
 Install the packages you need. For a full brand integration:
 
 ```bash
-npm install @dot-engine/core @dot-engine/renderer @dot-engine/brand
+npm install @bigpuddle/dot-engine-core @bigpuddle/dot-engine-renderer @bigpuddle/dot-engine-brand
 ```
 
 For asset export:
 
 ```bash
-npm install @dot-engine/export
+npm install @bigpuddle/dot-engine-export
 ```
 
 Peer dependencies:
@@ -33,7 +33,7 @@ The function is async because it rasterizes the logo through a canvas pipeline.
 
 ```ts
 // brand.ts
-import { defineBrand, text } from '@dot-engine/brand';
+import { defineBrand, text } from '@bigpuddle/dot-engine-brand';
 
 export const brand = await defineBrand({
   name: 'Acme Corp',
@@ -68,7 +68,7 @@ inside a full-canvas WebGL scene.
 ```tsx
 // App.tsx
 import { brand } from './brand';
-import { BrandMoment } from '@dot-engine/brand';
+import { BrandMoment } from '@bigpuddle/dot-engine-brand';
 
 export function App() {
   return (
@@ -90,8 +90,8 @@ Pass `context` as a prop to `BrandMoment`:
 
 ```tsx
 import { useState } from 'react';
-import { BrandMoment } from '@dot-engine/brand';
-import type { BrandContext } from '@dot-engine/brand';
+import { BrandMoment } from '@bigpuddle/dot-engine-brand';
+import type { BrandContext } from '@bigpuddle/dot-engine-brand';
 
 const CONTEXTS: BrandContext[] = ['logo', 'hero', 'loading', 'banner'];
 
@@ -117,7 +117,7 @@ For animated cross-fades, use `context="transition"` with a progress value:
 
 ```tsx
 import { useState, useEffect } from 'react';
-import { BrandMoment } from '@dot-engine/brand';
+import { BrandMoment } from '@bigpuddle/dot-engine-brand';
 
 export function TransitionDemo({ brand }) {
   const [progress, setProgress] = useState(0);
@@ -153,7 +153,7 @@ to generate a `ParticleNode` tuned to your brand, then render it with `<Particle
 
 ```tsx
 import { Canvas } from '@react-three/fiber';
-import { DotField, ParticleSystem } from '@dot-engine/renderer';
+import { DotField, ParticleSystem } from '@bigpuddle/dot-engine-renderer';
 
 export function BrandWithParticles({ brand }) {
   const field = brand.field('logo');
@@ -187,7 +187,7 @@ export function BrandWithParticles({ brand }) {
 Replace `text()` with `image()` in your brand config to use a raster logo:
 
 ```ts
-import { defineBrand, image } from '@dot-engine/brand';
+import { defineBrand, image } from '@bigpuddle/dot-engine-brand';
 
 const brand = await defineBrand({
   logo: image('/logo.png'),
@@ -200,7 +200,7 @@ const brand = await defineBrand({
 For SVG logos:
 
 ```ts
-import { defineBrand, svg } from '@dot-engine/brand';
+import { defineBrand, svg } from '@bigpuddle/dot-engine-brand';
 
 const brand = await defineBrand({
   logo: svg('/logo.svg'),
@@ -218,8 +218,8 @@ which grid dots are visible — dots appear inside the logo shape.
 ### SVG (CPU, any environment)
 
 ```ts
-import { presets } from '@dot-engine/core';
-import { exportSVG } from '@dot-engine/export';
+import { presets } from '@bigpuddle/dot-engine-core';
+import { exportSVG } from '@bigpuddle/dot-engine-export';
 
 const { svg, dotCount } = exportSVG(presets.minimal, {
   width: 1200,
@@ -242,8 +242,8 @@ a.href = url; a.download = 'logo.svg'; a.click();
 ### PNG (browser only)
 
 ```ts
-import { exportPNG } from '@dot-engine/export';
-import { presets } from '@dot-engine/core';
+import { exportPNG } from '@bigpuddle/dot-engine-export';
+import { presets } from '@bigpuddle/dot-engine-core';
 
 const blob = await exportPNG(presets.crystal, {
   width: 1920,
@@ -259,8 +259,8 @@ a.href = url; a.download = 'logo.png'; a.click();
 ### JSON serialization
 
 ```ts
-import { toJSON, fromJSON } from '@dot-engine/core';
-import type { FieldRoot } from '@dot-engine/core';
+import { toJSON, fromJSON } from '@bigpuddle/dot-engine-core';
+import type { FieldRoot } from '@bigpuddle/dot-engine-core';
 
 const json = toJSON(myField);
 const restored = fromJSON<FieldRoot>(json); // fresh node IDs assigned
@@ -273,7 +273,7 @@ const restored = fromJSON<FieldRoot>(json); // fresh node IDs assigned
 The configurator is the fastest way to explore vibes and dial in parameters visually.
 
 ```bash
-pnpm --filter @dot-engine/configurator dev
+pnpm --filter @bigpuddle/dot-engine-configurator dev
 ```
 
 1. Select a vibe from the left panel (Minimal, Cosmic, Neon, Glitch, etc.)

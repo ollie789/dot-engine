@@ -8,7 +8,6 @@ import type { LodOverride } from './LodBenchmark.js';
 export interface VideoFieldProps {
   src: string;
   field: FieldRoot;
-  resolution?: number;
   colorPrimary?: string;
   colorAccent?: string;
   lod?: 'auto' | LodOverride;
@@ -17,7 +16,6 @@ export interface VideoFieldProps {
 export function VideoField({
   src,
   field: fieldDesc,
-  resolution: _resolution = 128,
   colorPrimary,
   colorAccent,
   lod,
@@ -32,12 +30,14 @@ export function VideoField({
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
-    video.addEventListener('canplay', () => {
+    const onCanPlay = () => {
       video.play().catch(() => {});
       setReady(true);
-    });
+    };
+    video.addEventListener('canplay', onCanPlay);
     videoRef.current = video;
     return () => {
+      video.removeEventListener('canplay', onCanPlay);
       video.pause();
       video.src = '';
     };
@@ -53,6 +53,10 @@ export function VideoField({
     tex.magFilter = THREE.LinearFilter;
     return tex;
   }, [ready]);
+
+  useEffect(() => {
+    return () => { videoTexture?.dispose(); };
+  }, [videoTexture]);
 
   // Build field with imageField node
   const effectiveField = useMemo((): FieldRoot => {

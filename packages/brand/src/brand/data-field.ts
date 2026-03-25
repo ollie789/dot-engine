@@ -9,10 +9,14 @@ export function buildDataField(
   dataPoints: DataPoint[],
   options?: ContextOptions,
 ): FieldRoot {
+  if (brand.logo.prebuiltField) {
+    return brand.logo.prebuiltField;
+  }
+
   const res = params.gridResolution;
   const speed = brand.config.motion.speed * params.animateSpeed * 0.5;
   const children: FieldChildNode[] = [
-    shape(brand.logo.sdfNode),
+    shape(brand.logo.sdfNode!),
     grid({ type: 'uniform', resolution: [res, res, res] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     animate({ speed }),

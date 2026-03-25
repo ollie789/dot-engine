@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { FieldRoot, AnimateNode, DisplaceNode, ImageFieldNode } from '@bigpuddle/dot-engine-core';
@@ -50,11 +50,16 @@ export function DotField({
       typeof navigator !== 'undefined' &&
       'gpu' in navigator);
 
-  if (useWebGpu) {
-    console.warn(
-      '[dot-engine] WebGPU backend: compute shader compiled but runtime not yet implemented. Falling back to WebGL2.',
-    );
-  }
+  const warnedRef = useRef(false);
+  useEffect(() => {
+    if (useWebGpu && !warnedRef.current) {
+      console.warn(
+        '[dot-engine] WebGPU backend: compute shader compiled but runtime not yet implemented. Falling back to WebGL2.',
+      );
+      warnedRef.current = true;
+    }
+  }, [useWebGpu]);
+
   const meshRef = useRef<THREE.InstancedMesh>(null!);
   const { gl } = useThree();
 
@@ -156,6 +161,14 @@ export function DotField({
     () => geometryForComplexity(lodTier.dotComplexity),
     [lodTier.dotComplexity],
   );
+
+  useEffect(() => {
+    return () => { material.dispose(); };
+  }, [material]);
+
+  useEffect(() => {
+    return () => { geometry.dispose(); };
+  }, [geometry]);
 
   useFrame(({ clock }) => {
     material.uniforms.uTime.value = clock.elapsedTime * animateSpeed;

@@ -39,7 +39,7 @@
     "@bigpuddle/dot-engine-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bigpuddle/dot-engine-renderer": "^0.1.0",
+    "@bigpuddle/dot-engine-renderer": "^0.2.0",
     "@react-three/fiber": "^9.0.0",
     "react": "^19.0.0",
     "three": "^0.175.0"

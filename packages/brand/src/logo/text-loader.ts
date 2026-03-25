@@ -3,11 +3,8 @@
  * Renders text to canvas via fillText, extracts alpha mask.
  */
 
-export interface MaskResult {
-  mask: Uint8Array;
-  width: number;
-  height: number;
-}
+import type { MaskResult } from './mask-types.js';
+export type { MaskResult } from './mask-types.js';
 
 export function loadTextToMask(
   text: string,

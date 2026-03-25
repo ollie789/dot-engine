@@ -56,8 +56,8 @@ export function BottomBar({
     const fieldRoot = brand.field(activeContext, { canvasAspect: aspect || 16 / 9 });
     const { exportPNG } = await import('@bigpuddle/dot-engine-export');
     const blob = await exportPNG(fieldRoot, {
-      width: aspect > 0 ? Math.round(2048 * aspect / Math.max(aspect, 1)) : 2048,
-      height: aspect > 0 ? Math.round(2048 / Math.max(aspect, 1)) : 2048,
+      width: aspect >= 1 ? 2048 : (aspect > 0 ? Math.round(2048 * aspect) : 2048),
+      height: aspect >= 1 ? Math.round(2048 / aspect) : 2048,
       background: colorBackground,
     });
     const url = URL.createObjectURL(blob);
@@ -112,7 +112,7 @@ export function BottomBar({
       </button>
 
       {/* Status */}
-      <span className="bottom-status">dot-engine v0.9</span>
+      <span className="bottom-status">dot-engine v0.2.0</span>
 
       {/* Right-side actions */}
       <div className="bottom-bar-actions">

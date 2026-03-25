@@ -5,7 +5,7 @@ packages. Organized by package, then by category.
 
 ---
 
-## @dot-engine/core
+## @bigpuddle/dot-engine-core
 
 ### Field builders
 
@@ -413,13 +413,9 @@ Parses a JSON string and reassigns all node IDs to fresh values. Cast to the exp
 
 Generates a unique node ID string (`node_N`). Called automatically by all builder functions.
 
-#### `_resetIds(): void`
-
-Resets the ID counter to zero. For testing only.
-
 ---
 
-## @dot-engine/renderer
+## @bigpuddle/dot-engine-renderer
 
 ### Components
 
@@ -630,7 +626,7 @@ Floats per particle: `[x, y, z, vx, vy, vz, age, lifetime]`.
 
 ---
 
-## @dot-engine/brand
+## @bigpuddle/dot-engine-brand
 
 ### Brand definition
 
@@ -792,7 +788,7 @@ Browser-only. Captures one frame from a video element.
 
 ---
 
-## @dot-engine/export
+## @bigpuddle/dot-engine-export
 
 ### SVG export
 

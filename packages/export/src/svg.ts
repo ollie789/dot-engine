@@ -6,6 +6,7 @@ import type {
   ColorNode,
   SizeNode,
   OpacityNode,
+  SdfNode,
 } from '@bigpuddle/dot-engine-core';
 
 export interface ExportSVGOptions {
@@ -118,9 +119,15 @@ function project(
 // ---------------------------------------------------------------------------
 
 function hexToRgb(hex: string): [number, number, number] {
+  if (!hex || hex.length < 7 || hex[0] !== '#') {
+    return [255, 255, 255];
+  }
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    return [255, 255, 255];
+  }
   return [r, g, b];
 }
 
@@ -189,6 +196,22 @@ function generateGridPositions(gridNode: GridNode): [number, number, number][] {
 }
 
 // ---------------------------------------------------------------------------
+// Guard: textureSdf nodes require GPU — reject them early
+// ---------------------------------------------------------------------------
+
+function containsTextureSdf(node: SdfNode): boolean {
+  if (node.type === 'textureSdf') return true;
+  if ('a' in node && 'b' in node) {
+    const bn = node as { a: SdfNode; b: SdfNode };
+    return containsTextureSdf(bn.a) || containsTextureSdf(bn.b);
+  }
+  if ('child' in node) {
+    return containsTextureSdf((node as { child: SdfNode }).child);
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
 // Main export function
 // ---------------------------------------------------------------------------
 
@@ -213,6 +236,13 @@ export function exportSVG(fieldRoot: FieldRoot, options: ExportSVGOptions): SVGR
     // Nothing to render
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"></svg>`;
     return { svg, dotCount: 0 };
+  }
+
+  if (containsTextureSdf(shapeNode.sdf)) {
+    throw new Error(
+      'exportSVG: field contains textureSdf nodes which require GPU evaluation. ' +
+      'SVG export only supports analytical SDF shapes (sphere, box, torus, etc.).'
+    );
   }
 
   // Color config

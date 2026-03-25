@@ -12,11 +12,11 @@ data visualization — all from a single `defineBrand()` call.
 ## Quick start
 
 ```bash
-npm install @dot-engine/core @dot-engine/renderer @dot-engine/brand
+npm install @bigpuddle/dot-engine-core @bigpuddle/dot-engine-renderer @bigpuddle/dot-engine-brand
 ```
 
 ```tsx
-import { defineBrand, BrandMoment, text } from '@dot-engine/brand';
+import { defineBrand, BrandMoment, text } from '@bigpuddle/dot-engine-brand';
 
 const brand = await defineBrand({
   logo: text('ACME'),
@@ -40,11 +40,11 @@ export function App() {
 
 | Package | Description | Install |
 |---|---|---|
-| `@dot-engine/core` | Pure TypeScript DAG authoring API — zero dependencies | `npm i @dot-engine/core` |
-| `@dot-engine/renderer` | React Three Fiber rendering layer, compiles DAG to GLSL | `npm i @dot-engine/renderer` |
-| `@dot-engine/brand` | Brand identity layer — `defineBrand`, `BrandMoment`, contexts | `npm i @dot-engine/brand` |
-| `@dot-engine/export` | Export to SVG or PNG | `npm i @dot-engine/export` |
-| `@dot-engine/configurator` | Visual brand configurator (private, dev only) | — |
+| `@bigpuddle/dot-engine-core` | Pure TypeScript DAG authoring API — zero dependencies | `npm i @bigpuddle/dot-engine-core` |
+| `@bigpuddle/dot-engine-renderer` | React Three Fiber rendering layer, compiles DAG to GLSL | `npm i @bigpuddle/dot-engine-renderer` |
+| `@bigpuddle/dot-engine-brand` | Brand identity layer — `defineBrand`, `BrandMoment`, contexts | `npm i @bigpuddle/dot-engine-brand` |
+| `@bigpuddle/dot-engine-export` | Export to SVG or PNG | `npm i @bigpuddle/dot-engine-export` |
+| `@bigpuddle/dot-engine-configurator` | Visual brand configurator (private, dev only) | — |
 
 ---
 

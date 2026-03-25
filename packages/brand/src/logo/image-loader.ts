@@ -3,11 +3,8 @@
  * Loads image via Image + Canvas, extracts alpha mask as Uint8Array.
  */
 
-export interface MaskResult {
-  mask: Uint8Array;
-  width: number;
-  height: number;
-}
+import type { MaskResult } from './mask-types.js';
+export type { MaskResult } from './mask-types.js';
 
 export function loadImageToMask(source: string, resolution: number): Promise<MaskResult> {
   return new Promise((resolve, reject) => {

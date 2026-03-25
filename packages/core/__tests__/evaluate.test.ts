@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { _resetIds } from '../src/nodes/types.js';
+import { _resetIds, nodeId } from '../src/nodes/types.js';
+import type { SmoothSubtractNode, SmoothIntersectNode } from '../src/nodes/types.js';
 import { sphere, box, torus, cylinder, capsule, cone, plane, metaball } from '../src/sdf/primitives.js';
 import { union, smoothUnion, subtract, onion } from '../src/sdf/boolean.js';
 import { translate, scale, rotate, twist, bend, repeat, mirror, elongate } from '../src/sdf/transforms.js';
@@ -310,5 +311,43 @@ describe('evaluateSdf — metaball', () => {
     const sdf = metaball([{ position: [0, 0, 0], radius: 0.5 }], 2.0);
     // At [1, 0, 0]: sum = 0.25 / 1 = 0.25, result = 2.0 - 0.25 = 1.75
     expect(evaluateSdf(sdf, [1, 0, 0])).toBeCloseTo(1.75);
+  });
+});
+
+describe('edge-case guards', () => {
+  it('smoothSubtract with k=0 falls back to max(a, -b)', () => {
+    // Construct node directly to bypass builder validation
+    const node: SmoothSubtractNode = {
+      id: nodeId(), type: 'smoothSubtract', a: sphere(1), b: sphere(0.5), k: 0,
+    };
+    // At origin: a = sphere(1) = -1, b = sphere(0.5) = -0.5, max(-1, 0.5) = 0.5
+    expect(evaluateSdf(node, [0, 0, 0])).toBeCloseTo(0.5);
+    // Compare with hard subtract
+    const hard = subtract(sphere(1), sphere(0.5));
+    expect(evaluateSdf(node, [0, 0, 0])).toBeCloseTo(evaluateSdf(hard, [0, 0, 0]));
+  });
+
+  it('smoothIntersect with k=0 falls back to max(a, b)', () => {
+    // Construct node directly to bypass builder validation
+    const node: SmoothIntersectNode = {
+      id: nodeId(), type: 'smoothIntersect', a: sphere(1), b: translate(sphere(0.5), [1, 0, 0]), k: 0,
+    };
+    const aVal = evaluateSdf(sphere(1), [0, 0, 0]);
+    const bVal = evaluateSdf(translate(sphere(0.5), [1, 0, 0]), [0, 0, 0]);
+    expect(evaluateSdf(node, [0, 0, 0])).toBeCloseTo(Math.max(aVal, bVal));
+  });
+
+  it('scale with factor=0 returns 0', () => {
+    const sdf = scale(sphere(1), 0);
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBe(0);
+    expect(evaluateSdf(sdf, [5, 5, 5])).toBe(0);
+  });
+
+  it('repeat with zero spacing falls back to evaluating child directly', () => {
+    const sdf = repeat(sphere(0.5), [0, 2, 2]);
+    // Should evaluate child directly: sphere(0.5) at [0,0,0] = -0.5
+    expect(evaluateSdf(sdf, [0, 0, 0])).toBeCloseTo(-0.5);
+    // sphere(0.5) at [1,0,0] = len3(1,0,0) - 0.5 = 0.5
+    expect(evaluateSdf(sdf, [1, 0, 0])).toBeCloseTo(0.5);
   });
 });

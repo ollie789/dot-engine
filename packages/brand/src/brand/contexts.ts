@@ -1,6 +1,6 @@
 import { field, shape, grid, animate, color, size, twist, bend, mirror } from '@bigpuddle/dot-engine-core';
 import type { FieldChildNode, FieldRoot, SdfNode } from '@bigpuddle/dot-engine-core';
-import type { Brand, ContextOptions } from './types.js';
+import type { Brand, ContextOptions, BrandContext } from './types.js';
 import type { MappedParams } from './personality.js';
 import { motionToDisplacements } from './motion.js';
 
@@ -15,7 +15,7 @@ function applyTransforms(sdf: SdfNode, options?: ContextOptions): SdfNode {
 
 export function buildContextField(
   brand: Brand,
-  context: string,
+  context: BrandContext,
   params: MappedParams,
   options?: ContextOptions,
 ): FieldRoot {
@@ -59,7 +59,7 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
     }
   }
 
-  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
+  const sdfNode = applyTransforms(brand.logo.sdfNode!, options);
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, by * 2, bz * 2] }),
@@ -74,6 +74,10 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
 }
 
 export function buildHeroField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
+  if (brand.logo.prebuiltField) {
+    return brand.logo.prebuiltField;
+  }
+
   const speed = brand.config.motion.speed * params.animateSpeed * 0.5;
   const aspect = brand.logo.aspectRatio;
   const shortAxisDots = Math.round(40 + params.gridResolution * 0.8);
@@ -90,7 +94,7 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
     }
   }
 
-  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
+  const sdfNode = applyTransforms(brand.logo.sdfNode!, options);
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bx * 2, 2, 0.5] }),
@@ -105,10 +109,14 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
 }
 
 export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot {
+  if (brand.logo.prebuiltField) {
+    return brand.logo.prebuiltField;
+  }
+
   const res = Math.max(Math.round(params.gridResolution * 0.6), 15);
   const speed = brand.config.motion.speed * params.animateSpeed * 1.5;
   const children: FieldChildNode[] = [
-    shape(brand.logo.sdfNode),
+    shape(brand.logo.sdfNode!),
     grid({ type: 'uniform', resolution: [res, res, res] }),
     color({ primary: brand.config.colors.primary, accent: brand.config.colors.accent, mode: 'depth' }),
     // Only breathing displacement for loading — override to 'breathe'
@@ -120,6 +128,10 @@ export function buildLoadingField(brand: Brand, params: MappedParams): FieldRoot
 
 
 export function buildBannerField(brand: Brand, params: MappedParams, options?: ContextOptions): FieldRoot {
+  if (brand.logo.prebuiltField) {
+    return brand.logo.prebuiltField;
+  }
+
   const speed = brand.config.motion.speed * params.animateSpeed;
   const aspect = brand.logo.aspectRatio;
   // Banners are extra wide — boost X resolution
@@ -128,7 +140,7 @@ export function buildBannerField(brand: Brand, params: MappedParams, options?: C
   const rx = Math.round(shortAxisDots * bannerAspect);
   const ry = shortAxisDots;
   const rz = Math.max(3, Math.round(shortAxisDots * 0.1));
-  const sdfNode = applyTransforms(brand.logo.sdfNode, options);
+  const sdfNode = applyTransforms(brand.logo.sdfNode!, options);
   const children: FieldChildNode[] = [
     shape(sdfNode),
     grid({ type: 'uniform', resolution: [rx, ry, rz], bounds: [bannerAspect * 2, 2, 0.3] }),

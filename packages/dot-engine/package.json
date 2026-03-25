@@ -57,5 +57,12 @@
     "@bigpuddle/dot-engine-renderer": "workspace:*",
     "@bigpuddle/dot-engine-brand": "workspace:*",
     "@bigpuddle/dot-engine-export": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.175.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^10.0.0"
   }
 }

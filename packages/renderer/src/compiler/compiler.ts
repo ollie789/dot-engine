@@ -41,10 +41,13 @@ function f(n: number): string {
 
 /** Convert a hex color string to GLSL float components (r, g, b). */
 function hexToGlsl(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return `${f(r)}, ${f(g)}, ${f(b)}`;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    throw new Error(`hexToGlsl: invalid hex color "${hex}"`);
+  }
+  return `${f(r / 255)}, ${f(g / 255)}, ${f(b / 255)}`;
 }
 
 function emitDisplacement(node: DisplaceNode): string {
@@ -122,7 +125,10 @@ function compileGradient(node: GradientColorNode): string {
   for (let i = 1; i < node.stops.length; i++) {
     const [col, pos] = node.stops[i];
     const prevPos = node.stops[i - 1][1];
-    const t = `clamp((${axis} - ${f(prevPos)}) / ${f(pos - prevPos)}, 0.0, 1.0)`;
+    const range = pos - prevPos;
+    const t = range === 0
+      ? '1.0'
+      : `clamp((${axis} - ${f(prevPos)}) / ${f(range)}, 0.0, 1.0)`;
     expr = `mix(${expr}, vec3(${hexToGlsl(col)}), ${t})`;
   }
   return `vec3 color = ${expr};`;
@@ -136,14 +142,15 @@ function compileNoiseColor(node: NoiseColorNode): string {
   if (palette.length === 0) return 'vec3 color = vec3(1.0);';
   if (palette.length === 1) return `vec3 color = vec3(${hexToGlsl(palette[0])});`;
 
-  // Use noise to index into palette
-  const noiseSample = `snoise(vPosition * ${scale} + uTime * ${speed}) * 0.5 + 0.5`;
+  const lines: string[] = [];
+  lines.push(`float _noiseT = snoise(vPosition * ${scale} + uTime * ${speed}) * 0.5 + 0.5;`);
   let expr = `vec3(${hexToGlsl(palette[0])})`;
   for (let i = 1; i < palette.length; i++) {
-    const t = `clamp((${noiseSample} - ${f((i - 1) / (palette.length - 1))}) / ${f(1.0 / (palette.length - 1))}, 0.0, 1.0)`;
+    const t = `clamp((_noiseT - ${f((i - 1) / (palette.length - 1))}) / ${f(1.0 / (palette.length - 1))}, 0.0, 1.0)`;
     expr = `mix(${expr}, vec3(${hexToGlsl(palette[i])}), ${t})`;
   }
-  return `vec3 color = ${expr};`;
+  lines.push(`vec3 color = ${expr};`);
+  return lines.join('\n  ');
 }
 
 function compileColorLogic(colorNode: ColorFieldNode | undefined): string {

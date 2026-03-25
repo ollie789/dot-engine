@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { _resetIds, field, shape, grid } from '../../core/src/index.js';
+import { field, shape, grid } from '../../core/src/index.js';
+import { _resetIds } from '../../core/src/nodes/types.js';
 import { sphere } from '../../core/src/sdf/primitives.js';
 import { motionToDisplacements } from '../src/brand/motion.js';
 import { sdf, customField } from '../src/logo/types.js';

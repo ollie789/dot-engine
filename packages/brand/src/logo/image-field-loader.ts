@@ -1,3 +1,5 @@
+let _imgFieldCounter = 0;
+
 export interface ImageFieldData {
   /** RGBA pixel data as Float32Array (r,g,b,a per pixel, all 0-1) */
   pixels: Float32Array;
@@ -23,7 +25,8 @@ export async function loadImageForField(
   const aspect = img.naturalWidth / img.naturalHeight;
   canvas.width = res;
   canvas.height = Math.round(res / aspect);
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Failed to get 2D canvas context');
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -37,7 +40,7 @@ export async function loadImageForField(
     pixels,
     width: canvas.width,
     height: canvas.height,
-    textureId: `imgfield_${Date.now()}`,
+    textureId: `imgfield_${++_imgFieldCounter}`,
   };
 }
 
@@ -45,12 +48,17 @@ export function grabVideoFrame(
   video: HTMLVideoElement,
   resolution?: number,
 ): ImageFieldData {
+  if (video.videoWidth === 0 || video.videoHeight === 0) {
+    throw new Error('Video has no dimensions — metadata may not be loaded yet');
+  }
+
   const res = resolution ?? 256;
   const canvas = document.createElement('canvas');
   const aspect = video.videoWidth / video.videoHeight;
   canvas.width = res;
   canvas.height = Math.round(res / aspect);
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Failed to get 2D canvas context');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -63,6 +71,6 @@ export function grabVideoFrame(
     pixels,
     width: canvas.width,
     height: canvas.height,
-    textureId: `vidframe_${Date.now()}`,
+    textureId: `vidframe_${++_imgFieldCounter}`,
   };
 }

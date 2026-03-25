@@ -5,7 +5,7 @@ export interface ImageInput { type: 'image'; source: string; }
 export interface TextInput { type: 'text'; text: string; font?: string; weight?: number; }
 export interface SdfInput {
   type: 'sdf';
-  node: SdfNode;
+  node: SdfNode | null;
   /** Optional pre-built field — if provided, contexts use this directly instead of wrapping in shape() */
   field?: FieldRoot;
 }
@@ -17,7 +17,7 @@ export interface ProcessedLogo {
   height: number;
   aspectRatio: number;
   textureId: string;
-  sdfNode: TextureSdfNode | SdfNode;
+  sdfNode: TextureSdfNode | SdfNode | null;
   prebuiltField?: FieldRoot | null;
 }
 
@@ -38,5 +38,5 @@ export function sdf(node: SdfNode): SdfInput {
 
 /** Pass a complete pre-built field — contexts will use it directly */
 export function customField(fieldRoot: FieldRoot): SdfInput {
-  return { type: 'sdf', node: null as any, field: fieldRoot };
+  return { type: 'sdf', node: null, field: fieldRoot };
 }

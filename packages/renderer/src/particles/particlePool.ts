@@ -177,7 +177,7 @@ export function updateParticlePool(
     pool[si + 5] += gravity[2] * dt;
 
     // Drag
-    const dragFactor = 1 - drag * dt;
+    const dragFactor = Math.max(0, 1 - drag * dt);
     pool[si + 3] *= dragFactor;
     pool[si + 4] *= dragFactor;
     pool[si + 5] *= dragFactor;

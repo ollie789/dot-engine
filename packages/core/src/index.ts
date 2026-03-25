@@ -59,7 +59,7 @@ export type {
   FieldChildNode,
   FieldRoot,
 } from './nodes/types.js';
-export { nodeId, _resetIds } from './nodes/types.js';
+export { nodeId } from './nodes/types.js';
 
 // Image field builder
 export { imageField } from './nodes/image-field.js';

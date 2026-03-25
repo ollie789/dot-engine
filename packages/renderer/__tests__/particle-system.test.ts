@@ -150,6 +150,21 @@ describe('drag', () => {
 
     expect(vxAfter).toBeLessThan(vxBefore);
   });
+
+  it('high drag does not invert velocity', () => {
+    const config = makeConfig({
+      emitter: burstEmitter(1),
+      lifecycle: { lifetime: 10 },
+      motion: { velocity: [0, 1, 0], speed: 1, spread: 0, drag: 100 },
+    });
+    const state = createParticlePool(10);
+    updateParticlePool(state, 0.016, config, 10); // spawn
+
+    updateParticlePool(state, 1.0, config, 10); // extreme drag
+
+    const vy = state.pool[4];
+    expect(vy).toBeGreaterThanOrEqual(0);
+  });
 });
 
 describe('getParticleAlpha', () => {

@@ -65,7 +65,7 @@ function reassignIds(obj: unknown): unknown {
   return result;
 }
 
-export function fromJSON<T>(json: string): T {
+export function fromJSON<T extends Serializable>(json: string): T {
   const parsed = JSON.parse(json) as unknown;
   return reassignIds(parsed) as T;
 }

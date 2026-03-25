@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrandMoment } from '@bigpuddle/dot-engine-brand';
 import type { Brand, BrandContext } from '@bigpuddle/dot-engine-brand';
 import { qivrBrandPromise } from '../qivr-brand';
+
+function useQivrBrand(): Brand | null {
+  const [brand, setBrand] = useState<Brand | null>(null);
+  useEffect(() => { qivrBrandPromise.then(setBrand); }, []);
+  return brand;
+}
 
 // ─── Single mark at a fixed context ──────────────────────────────────────────
 
@@ -18,6 +24,8 @@ export function QivrMark({
   height = 400,
   interactive = false,
 }: QivrMarkProps) {
+  const qivrBrand = useQivrBrand();
+  if (!qivrBrand) return null;
   return (
     <div style={{ width, height }}>
       <BrandMoment
@@ -36,6 +44,8 @@ export function QivrMark({
 // The field bleeds slightly into the text zone — intentional.
 
 export function QivrWordmark({ width = 640, height = 160 }) {
+  const qivrBrand = useQivrBrand();
+  if (!qivrBrand) return null;
   return (
     <div
       style={{
@@ -87,6 +97,8 @@ const CONTEXTS: { id: BrandContext; label: string; aspect: number }[] = [
 ];
 
 export function QivrBrandExplorer() {
+  const qivrBrand = useQivrBrand();
+  if (!qivrBrand) return null;
   const [active, setActive] = useState<BrandContext>('logo');
   const current = CONTEXTS.find(c => c.id === active)!;
 

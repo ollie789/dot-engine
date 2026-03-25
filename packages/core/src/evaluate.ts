@@ -157,6 +157,7 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
     case 'smoothSubtract': {
       const a = evaluateSdf(node.a, p);
       const b = evaluateSdf(node.b, p);
+      if (node.k <= 0) return Math.max(a, -b);
       const h = Math.max(node.k - Math.abs(a + b), 0) / node.k;
       return Math.max(a, -b) + (h * h * h * node.k) / 6;
     }
@@ -169,6 +170,7 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
       // -smin(-a, -b, k)
       const a = evaluateSdf(node.a, p);
       const b = evaluateSdf(node.b, p);
+      if (node.k <= 0) return Math.max(a, b);
       const h = Math.max(node.k - Math.abs(a - b), 0) / node.k;
       return Math.max(a, b) + (h * h * h * node.k) / 6;
     }
@@ -199,6 +201,7 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
     }
 
     case 'scale': {
+      if (node.factor === 0) return 0;
       const sp: Vec3 = [p[0] / node.factor, p[1] / node.factor, p[2] / node.factor];
       return evaluateSdf(node.child, sp) * node.factor;
     }
@@ -220,6 +223,9 @@ export function evaluateSdf(node: SdfNode, p: Vec3): number {
 
     case 'repeat': {
       const [sx, sy, sz] = node.spacing;
+      if (sx === 0 || sy === 0 || sz === 0) {
+        return evaluateSdf(node.child, p);
+      }
       const mod = (a: number, b: number) => ((a % b) + b) % b;
       const q: Vec3 = [
         mod(p[0] + sx * 0.5, sx) - sx * 0.5,
