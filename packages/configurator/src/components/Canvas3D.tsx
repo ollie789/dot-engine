@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { DotField, usePointerInfluence, ParticleSystem } from '@bigpuddle/dot-engine-renderer';
+import { DotField, DotFieldErrorBoundary, usePointerInfluence, ParticleSystem } from '@bigpuddle/dot-engine-renderer';
 import type { Brand, BrandContext, ImageFieldData } from '@bigpuddle/dot-engine-brand';
 import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
 import { imageField, shape, sphere } from '@bigpuddle/dot-engine-core';
@@ -248,19 +248,21 @@ export function Canvas3D({
     <div ref={containerRef} className="canvas-wrapper">
       {/* R3F canvas sized to frame + overflow bleed */}
       <div style={canvasStyle}>
-        <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
-          <Scene
-            brand={brand}
-            activeContext={activeContext}
-            pointerEnabled={pointerEnabled}
-            colorPrimary={colorPrimary}
-            colorAccent={colorAccent}
-            particleMode={particleMode}
-            imageData={imageData}
-            effectiveAspect={effectiveAspect}
-            contextOptions={contextOptions}
-          />
-        </Canvas>
+        <DotFieldErrorBoundary onError={(err) => console.error('[configurator] Render error:', err)}>
+          <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+            <Scene
+              brand={brand}
+              activeContext={activeContext}
+              pointerEnabled={pointerEnabled}
+              colorPrimary={colorPrimary}
+              colorAccent={colorAccent}
+              particleMode={particleMode}
+              imageData={imageData}
+              effectiveAspect={effectiveAspect}
+              contextOptions={contextOptions}
+            />
+          </Canvas>
+        </DotFieldErrorBoundary>
       </div>
 
       {/* Format frame overlay — only shown when aspect is locked */}

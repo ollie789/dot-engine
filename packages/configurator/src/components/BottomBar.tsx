@@ -55,10 +55,13 @@ export function BottomBar({
     if (!brand) return;
     const fieldRoot = brand.field(activeContext, { canvasAspect: aspect || 16 / 9 });
     const { exportPNG } = await import('@bigpuddle/dot-engine-export');
+    const colors = brand.config.colors;
     const blob = await exportPNG(fieldRoot, {
       width: aspect >= 1 ? 2048 : (aspect > 0 ? Math.round(2048 * aspect) : 2048),
       height: aspect >= 1 ? Math.round(2048 / aspect) : 2048,
       background: colorBackground,
+      colorPrimary: colors.primary,
+      colorAccent: colors.accent,
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
