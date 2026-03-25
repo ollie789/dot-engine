@@ -87,7 +87,7 @@ export * from './sdf/index.js';
 export { evaluateSdf } from './evaluate.js';
 
 // JSON serialization
-export type { Serializable } from './serialize.js';
+export type { Serializable, FromJSONOptions } from './serialize.js';
 export { toJSON, fromJSON } from './serialize.js';
 
 // Presets

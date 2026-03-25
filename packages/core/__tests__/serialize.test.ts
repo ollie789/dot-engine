@@ -86,3 +86,68 @@ describe('toJSON / fromJSON round-trip', () => {
     expect(restored.edgeSoftness).toBe(0.08);
   });
 });
+
+describe('fromJSON validation', () => {
+  it('accepts valid FieldRoot', () => {
+    const original = buildField();
+    const json = toJSON(original);
+    expect(() => fromJSON<FieldRoot>(json)).not.toThrow();
+  });
+
+  it('rejects object with unknown type', () => {
+    const json = JSON.stringify({ id: 'x', type: 'banana', children: [] });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/unknown node type "banana"/);
+  });
+
+  it('rejects field with non-array children', () => {
+    const json = JSON.stringify({ id: 'x', type: 'field', children: 'not-an-array' });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/expected "children" array/);
+  });
+
+  it('rejects invalid SDF type in shape', () => {
+    const json = JSON.stringify({
+      id: 'x', type: 'field', children: [
+        { id: 'y', type: 'shape', sdf: { id: 'z', type: 'fakeSdf' } },
+      ],
+    });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/expected SDF type/);
+  });
+
+  it('rejects customSdf by default', () => {
+    const json = JSON.stringify({
+      id: 'x', type: 'field', children: [
+        { id: 'y', type: 'shape', sdf: { id: 'z', type: 'customSdf', glsl: 'malicious code' } },
+      ],
+    });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/customSdf nodes are rejected/);
+  });
+
+  it('allows customSdf when allowCustomSdf is true', () => {
+    const json = JSON.stringify({
+      id: 'x', type: 'field', children: [
+        { id: 'y', type: 'shape', sdf: { id: 'z', type: 'customSdf', glsl: 'return 0.0;' } },
+      ],
+    });
+    expect(() => fromJSON<FieldRoot>(json, { allowCustomSdf: true })).not.toThrow();
+  });
+
+  it('rejects missing type field', () => {
+    const json = JSON.stringify({ id: 'x', children: [] });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/missing or invalid "type"/);
+  });
+
+  it('validates nested SDF tree in boolean nodes', () => {
+    const json = JSON.stringify({
+      id: 'x', type: 'field', children: [
+        {
+          id: 'y', type: 'shape', sdf: {
+            id: 'z', type: 'union',
+            a: { id: 'a', type: 'sphere', radius: 1 },
+            b: { id: 'b', type: 'invalidNode' },
+          },
+        },
+      ],
+    });
+    expect(() => fromJSON<FieldRoot>(json)).toThrow(/expected SDF type.*root\.children\[0\]\.sdf\.b/);
+  });
+});
