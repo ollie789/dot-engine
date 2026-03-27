@@ -148,6 +148,19 @@ describe('buildContextField()', () => {
     expect(grid.resolution[0]).toBeGreaterThan(0);
     expect(grid.resolution[1]).toBeGreaterThan(0);
   });
+
+  it('banner adapts grid bounds when canvasAspect exceeds banner aspect', () => {
+    const brand = makeMockBrand();
+    const params = makeMockParams();
+    const narrow = buildBannerField(brand, params);
+    const wide = buildBannerField(brand, params, { canvasAspect: 6 });
+
+    const narrowGrid = narrow.children.find(c => c.type === 'grid') as any;
+    const wideGrid = wide.children.find(c => c.type === 'grid') as any;
+
+    // Wide canvas should extend X bounds beyond the default 3:1 banner aspect
+    expect(wideGrid.bounds[0]).toBeGreaterThan(narrowGrid.bounds[0]);
+  });
 });
 
 describe('transition context', () => {
