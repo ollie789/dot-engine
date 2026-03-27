@@ -80,16 +80,18 @@ describe('compileField', () => {
     expect(compiled.fragmentShader).toContain('gl_FragColor');
   });
 
-  it('uses default edgeSoftness 0.05 when not specified', () => {
+  it('vertex shader declares uEdgeSoftness and uAutoSize uniforms', () => {
     const root = field(
       shape(sphere(1)),
       grid({ type: 'uniform', resolution: [10, 10, 10] }),
     );
     const compiled = compileField(root);
-    expect(compiled.vertexShader).toContain('float edgeSoftness = 0.05;');
+    expect(compiled.vertexShader).toContain('uniform float uEdgeSoftness');
+    expect(compiled.vertexShader).toContain('uniform float uAutoSize');
+    expect(compiled.vertexShader).toContain('float edgeSoftness = uEdgeSoftness');
   });
 
-  it('uses custom edgeSoftness when specified on FieldRoot', () => {
+  it('edgeSoftness is returned on CompiledField', () => {
     const root = {
       ...field(
         shape(sphere(1)),
@@ -98,7 +100,16 @@ describe('compileField', () => {
       edgeSoftness: 0.08,
     };
     const compiled = compileField(root);
-    expect(compiled.vertexShader).toContain('float edgeSoftness = 0.08;');
-    expect(compiled.vertexShader).not.toContain('float edgeSoftness = 0.05;');
+    expect(compiled.edgeSoftness).toBe(0.08);
+  });
+
+  it('autoSize is computed from resolution and bounds when no explicit size node', () => {
+    const root = field(
+      shape(sphere(1)),
+      grid({ type: 'uniform', resolution: [10, 10, 10], bounds: [2, 2, 2] as [number, number, number] }),
+    );
+    const compiled = compileField(root);
+    // avgRes = 10, avgBounds = 2, autoSize = (2/10) * 0.4 = 0.08 → clamped to max 0.05
+    expect(compiled.autoSize).toBeCloseTo(0.05, 3);
   });
 });

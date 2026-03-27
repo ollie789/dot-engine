@@ -140,6 +140,8 @@ export function DotField({
       uColorAccent: { value: hexToVec3(colorAccent) },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerStrength: { value: 0 },
+      uEdgeSoftness: { value: compiled.edgeSoftness },
+      uAutoSize: { value: compiled.autoSize },
     };
 
     // Create texture uniform slots (will be filled dynamically)
@@ -208,6 +210,14 @@ export function DotField({
       meshRef.current.material = material;
     }
   }, [material]);
+
+  // Update instance-specific uniforms when compiled field changes
+  useEffect(() => {
+    material.uniforms.uResolution.value.set(...compiled.resolution);
+    material.uniforms.uBounds.value.set(...compiled.bounds);
+    material.uniforms.uEdgeSoftness.value = compiled.edgeSoftness;
+    material.uniforms.uAutoSize.value = compiled.autoSize;
+  }, [material, compiled]);
 
   // Update mesh.count when totalDots changes
   useEffect(() => {

@@ -9,6 +9,8 @@ uniform vec3 uResolution;
 uniform vec3 uBounds;
 uniform vec2 uPointer;
 uniform float uPointerStrength;
+uniform float uEdgeSoftness;
+uniform float uAutoSize;
 {{EXTRA_UNIFORMS}}
 
 {{NOISE_FUNCTIONS}}
@@ -51,7 +53,7 @@ void main() {
   vImgUv = vec2(0.0);
 {{IMAGE_FIELD}}
   float d = {{SDF_ROOT}}(displaced);
-  float edgeSoftness = {{EDGE_SOFTNESS}};
+  float edgeSoftness = uEdgeSoftness;
   float field = 1.0 - smoothstep(-edgeSoftness, edgeSoftness, d);
   float dotScale = {{SIZE_EXPR}} * imgScale;
   vec3 scaledPos = position * field * dotScale;

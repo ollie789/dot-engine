@@ -31,6 +31,8 @@ export interface CompiledField {
   bounds: [number, number, number];
   totalDots: number;
   extraUniforms: Record<string, ExtraUniform>;
+  autoSize: number;
+  edgeSoftness: number;
 }
 
 /** Format a number for GLSL — always include a decimal point. */
@@ -212,13 +214,9 @@ function compileOpacityExpr(opacityNode: OpacityNode | undefined): string {
   }
 }
 
-function compileSizeExpr(sizeNode: SizeNode | undefined, resolution: [number, number, number], bounds: [number, number, number]): string {
+function compileSizeExpr(sizeNode: SizeNode | undefined): string {
   if (!sizeNode) {
-    // Auto-scale dot size: bounds / resolution gives cell spacing, dots should be ~40% of cell
-    const avgRes = (resolution[0] + resolution[1] + resolution[2]) / 3;
-    const avgBounds = (bounds[0] + bounds[1] + bounds[2]) / 3;
-    const autoSize = (avgBounds / avgRes) * 0.4;
-    return f(Math.max(0.002, Math.min(0.05, autoSize)));
+    return 'uAutoSize';
   }
   const min = f(sizeNode.min);
   const max = f(sizeNode.max);
@@ -372,7 +370,7 @@ export function compileField(root: FieldRoot): CompiledField {
   const displacementLines = displaceNodes.map(emitDisplacement).join('\n');
 
   // Compile size expression
-  const sizeExpr = compileSizeExpr(sizeNode, resolution, bounds);
+  const sizeExpr = compileSizeExpr(sizeNode);
 
   // Emit image field GLSL code
   const imageFieldCode = imageFieldNode ? emitImageFieldVertex(imageFieldNode) : '';
@@ -385,8 +383,7 @@ export function compileField(root: FieldRoot): CompiledField {
     .replaceAll('{{SDF_ROOT}}', rootFn)
     .replace('{{DISPLACEMENT}}', displacementLines)
     .replace('{{IMAGE_FIELD}}', imageFieldCode)
-    .replace('{{SIZE_EXPR}}', sizeExpr)
-    .replace('{{EDGE_SOFTNESS}}', f(root.edgeSoftness ?? 0.05));
+    .replace('{{SIZE_EXPR}}', sizeExpr);
 
   // Fragment shader: generate color/opacity logic
   const colorLogic =
@@ -414,6 +411,12 @@ export function compileField(root: FieldRoot): CompiledField {
     .replace('{{COLOR_LOGIC}}', colorLogic)
     .replace('{{OPACITY_EXPR}}', opacityExpr);
 
+  // Compute auto-size value (used as uniform, not baked into shader)
+  const avgRes = (resolution[0] + resolution[1] + resolution[2]) / 3;
+  const avgBounds = (bounds[0] + bounds[1] + bounds[2]) / 3;
+  const autoSize = sizeNode ? 0 : Math.max(0.002, Math.min(0.05, (avgBounds / avgRes) * 0.4));
+  const edgeSoftness = root.edgeSoftness ?? 0.05;
+
   return {
     vertexShader,
     fragmentShader,
@@ -421,5 +424,7 @@ export function compileField(root: FieldRoot): CompiledField {
     bounds,
     totalDots,
     extraUniforms,
+    autoSize,
+    edgeSoftness,
   };
 }
