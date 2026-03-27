@@ -6,7 +6,7 @@ import { compileField } from '../compiler/compiler.js';
 import { compileFieldWgsl } from '../compiler/wgsl-compiler.js';
 import { initWebGPUCompute, dispatchCompute, readResults, destroyCompute, type WebGPUComputeContext } from '../compute/WebGPUCompute.js';
 import { applyComputeResults } from '../compute/computeBridge.js';
-import { computeLodTier, type LodOverride, type LodTier } from './LodBenchmark.js';
+import { computeLodTier, clampToCanvas, type LodOverride, type LodTier } from './LodBenchmark.js';
 
 export interface DotFieldProps {
   field: FieldRoot;
@@ -63,18 +63,23 @@ export function DotField({
     backend === 'webgpu' ||
     (backend === 'auto' && typeof navigator !== 'undefined' && 'gpu' in navigator);
 
-  const { gl, scene } = useThree();
+  const { gl, scene, size } = useThree();
 
-  // Compute LOD tier
+  // Compute LOD tier — device capability + canvas pixel budget
   const lodTier = useMemo((): LodTier => {
-    if (lod !== 'auto') return computeLodTier(0, 1, lod);
-    const pixelRatio = gl.getPixelRatio();
-    const isHighEnd = pixelRatio >= 2 && gl.capabilities.maxTextureSize >= 8192;
-    const isMobile = pixelRatio >= 2 && gl.capabilities.maxTextureSize <= 4096;
-    if (isHighEnd) return computeLodTier(1, 10000);
-    if (isMobile) return computeLodTier(14, 10000);
-    return computeLodTier(5, 10000);
-  }, [lod, gl]);
+    let tier: LodTier;
+    if (lod !== 'auto') {
+      tier = computeLodTier(0, 1, lod);
+    } else {
+      const pixelRatio = gl.getPixelRatio();
+      const isHighEnd = pixelRatio >= 2 && gl.capabilities.maxTextureSize >= 8192;
+      const isMobile = pixelRatio >= 2 && gl.capabilities.maxTextureSize <= 4096;
+      if (isHighEnd) tier = computeLodTier(1, 10000);
+      else if (isMobile) tier = computeLodTier(14, 10000);
+      else tier = computeLodTier(5, 10000);
+    }
+    return clampToCanvas(tier, size.width * size.height);
+  }, [lod, gl, size.width, size.height]);
 
   // Strip flow field when LOD says to
   const effectiveField = useMemo(() => {
