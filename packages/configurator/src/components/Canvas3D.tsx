@@ -77,6 +77,10 @@ function computeCanvasRect(
   };
 }
 
+function roundAspect(v: number): number {
+  return Math.round(v * 100) / 100;
+}
+
 interface SceneProps {
   brand: Brand | null;
   activeContext: BrandContext;
@@ -118,7 +122,7 @@ function Scene({
   }, [camera, effectiveAspect]);
 
   const baseFieldRoot = useMemo(
-    () => (brand ? brand.field(activeContext, { canvasAspect: effectiveAspect, ...contextOptions }) : null),
+    () => (brand ? brand.field(activeContext, { canvasAspect: roundAspect(effectiveAspect), ...contextOptions }) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [brand, activeContext, effectiveAspect, contextOptions],
   );

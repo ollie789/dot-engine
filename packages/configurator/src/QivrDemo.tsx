@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useState, useEffect, useMemo } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { DotField } from '@bigpuddle/dot-engine-renderer';
 import type { Brand, BrandContext } from '@bigpuddle/dot-engine-brand';
 import { qivrBrandPromise } from './qivr-brand';
+
+function roundAspect(v: number): number {
+  return Math.round(v * 100) / 100;
+}
 
 const CONTEXTS: { id: BrandContext; label: string }[] = [
   { id: 'logo', label: 'Logo' },
@@ -13,7 +17,19 @@ const CONTEXTS: { id: BrandContext; label: string }[] = [
 ];
 
 function QivrScene({ brand, context }: { brand: Brand; context: BrandContext }) {
-  const fieldRoot = brand.field(context);
+  const { size } = useThree();
+
+  const canvasAspect = useMemo(() => {
+    if (size.width === 0 || size.height === 0) return undefined;
+    return roundAspect(size.width / size.height);
+  }, [size.width, size.height]);
+
+  const fieldRoot = useMemo(
+    () => brand.field(context, canvasAspect !== undefined ? { canvasAspect } : undefined),
+    [brand, context, canvasAspect],
+  );
+
+  if (canvasAspect === undefined) return null;
 
   return (
     <>
