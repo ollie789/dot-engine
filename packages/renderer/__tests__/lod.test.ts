@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeLodTier } from '../src/components/LodBenchmark.js';
+import { computeLodTier, clampToCanvas } from '../src/components/LodBenchmark.js';
 
 describe('computeLodTier', () => {
   it('fast GPU (1ms/10K dots) → high tier, maxDots > 100K', () => {
@@ -63,5 +63,29 @@ describe('computeLodTier', () => {
     expect(tier.maxDots).toBe(5000);
     expect(tier.dotComplexity).toBe(1);
     expect(tier.includeFlowField).toBe(false);
+  });
+});
+
+describe('clampToCanvas', () => {
+  it('small canvas clamps maxDots below device tier', () => {
+    const tier = computeLodTier(1, 10000); // high tier, ~300k maxDots
+    const clamped = clampToCanvas(tier, 400 * 300); // 120k pixels
+    expect(clamped.maxDots).toBeLessThan(tier.maxDots);
+    expect(clamped.maxDots).toBe(Math.floor(120000 / 20));
+    expect(clamped.quality).toBe(tier.quality);
+    expect(clamped.dotComplexity).toBe(tier.dotComplexity);
+    expect(clamped.includeFlowField).toBe(tier.includeFlowField);
+  });
+
+  it('large canvas does not exceed device tier', () => {
+    const tier = computeLodTier(1, 10000); // high tier, 300k cap
+    const clamped = clampToCanvas(tier, 3840 * 2160); // 8.3M pixels → 414k target
+    expect(clamped.maxDots).toBe(tier.maxDots); // capped at device tier
+  });
+
+  it('zero canvas pixels returns MIN_DOTS', () => {
+    const tier = computeLodTier(1, 10000);
+    const clamped = clampToCanvas(tier, 0);
+    expect(clamped.maxDots).toBe(1000);
   });
 });

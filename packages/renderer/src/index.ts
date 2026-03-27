@@ -6,7 +6,7 @@ export { DotFieldCanvas, type DotFieldCanvasProps } from './components/DotFieldC
 export { DotFieldErrorBoundary, type DotFieldErrorBoundaryProps } from './components/DotFieldErrorBoundary.js';
 export { MorphField, type MorphFieldProps } from './components/MorphField.js';
 export { VideoField, type VideoFieldProps } from './components/VideoField.js';
-export { computeLodTier, type LodTier, type LodOverride, type LodQuality } from './components/LodBenchmark.js';
+export { computeLodTier, clampToCanvas, type LodTier, type LodOverride, type LodQuality } from './components/LodBenchmark.js';
 export { usePointerInfluence, type PointerInfluenceOptions, type PointerInfluence } from './hooks/usePointerInfluence.js';
 export { useScrollInfluence, type ScrollInfluenceOptions, type ScrollInfluence } from './hooks/useScrollInfluence.js';
 export { useSpring3D, type Spring3DOptions, type Spring3D } from './hooks/useSpring3D.js';

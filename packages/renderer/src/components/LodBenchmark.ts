@@ -33,6 +33,14 @@ export function computeLodTier(
   return tierForQuality('low', maxDots);
 }
 
+const PIXELS_PER_DOT = 20;
+
+export function clampToCanvas(tier: LodTier, canvasPixels: number): LodTier {
+  if (canvasPixels <= 0) return { ...tier, maxDots: MIN_DOTS };
+  const pixelBudget = Math.floor(canvasPixels / PIXELS_PER_DOT);
+  return { ...tier, maxDots: Math.min(tier.maxDots, Math.max(MIN_DOTS, pixelBudget)) };
+}
+
 function tierForQuality(quality: LodQuality, maxDots: number): LodTier {
   switch (quality) {
     case 'high': return { quality, maxDots: Math.min(maxDots, 300000), dotComplexity: 8, includeFlowField: true };
