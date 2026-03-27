@@ -19,6 +19,48 @@ import { CURL3D_GLSL } from './curl3d.glsl.js';
 import { BASE_VERTEX } from '../shaders/base-vertex.js';
 import { BASE_FRAGMENT } from '../shaders/base-fragment.js';
 
+function serializeSdf(node: SdfNode): string {
+  return JSON.stringify(node, (key, value) => (key === 'id' ? undefined : value));
+}
+
+export function getShaderKey(root: FieldRoot): string {
+  const shapeNode = root.children.find((c) => c.type === 'shape') as ShapeNode | undefined;
+  const displaceNodes = root.children.filter((c) => c.type === 'displace') as DisplaceNode[];
+  const colorNode = root.children.find(
+    (c) => c.type === 'color' || c.type === 'gradientColor' || c.type === 'noiseColor',
+  ) as ColorFieldNode | undefined;
+  const opacityNode = root.children.find((c) => c.type === 'opacity') as OpacityNode | undefined;
+  const sizeNode = root.children.find((c) => c.type === 'size') as SizeNode | undefined;
+  const imageFieldNode = root.children.find((c) => c.type === 'imageField') as ImageFieldNode | undefined;
+
+  const parts: string[] = [];
+
+  if (shapeNode) parts.push('sdf:' + serializeSdf(shapeNode.sdf));
+
+  for (const d of displaceNodes) {
+    parts.push('disp:' + JSON.stringify(d.noise) + ':' + d.amount);
+  }
+
+  if (colorNode) parts.push('col:' + JSON.stringify(colorNode, (key, value) => (key === 'id' ? undefined : value)));
+
+  if (opacityNode) parts.push('op:' + opacityNode.mode + ':' + opacityNode.min + ':' + opacityNode.max);
+
+  if (sizeNode) parts.push('sz:' + sizeNode.mode + ':' + sizeNode.min + ':' + sizeNode.max);
+  else parts.push('sz:auto');
+
+  if (imageFieldNode) parts.push('img:' + imageFieldNode.mode + ':' + (imageFieldNode.threshold ?? 0.1) + ':' + !!imageFieldNode.colorFromImage);
+
+  return parts.join('|');
+}
+
+interface CachedShader {
+  vertexShader: string;
+  fragmentShader: string;
+  extraUniforms: Record<string, ExtraUniform>;
+}
+
+const shaderCache = new Map<string, CachedShader>();
+
 export interface ExtraUniform {
   type: 'sampler2D' | 'float';
   declaration: string;
@@ -303,6 +345,26 @@ export function compileField(root: FieldRoot): CompiledField {
   const bounds: [number, number, number] = gridNode.bounds ?? [2, 2, 2];
   const totalDots = resolution[0] * resolution[1] * resolution[2];
 
+  const shaderKey = getShaderKey(root);
+  const cached = shaderCache.get(shaderKey);
+
+  if (cached) {
+    const avgRes = (resolution[0] + resolution[1] + resolution[2]) / 3;
+    const avgBounds = (bounds[0] + bounds[1] + bounds[2]) / 3;
+    const sizeNode = root.children.find((c) => c.type === 'size') as SizeNode | undefined;
+    const autoSize = sizeNode ? 0 : Math.max(0.002, Math.min(0.05, (avgBounds / avgRes) * 0.4));
+    const edgeSoftness = root.edgeSoftness ?? 0.05;
+
+    return {
+      ...cached,
+      resolution,
+      bounds,
+      totalDots,
+      autoSize,
+      edgeSoftness,
+    };
+  }
+
   // Extract DisplaceNodes in declaration order
   const displaceNodes = root.children.filter((c): c is DisplaceNode => c.type === 'displace');
 
@@ -416,6 +478,8 @@ export function compileField(root: FieldRoot): CompiledField {
   const avgBounds = (bounds[0] + bounds[1] + bounds[2]) / 3;
   const autoSize = sizeNode ? 0 : Math.max(0.002, Math.min(0.05, (avgBounds / avgRes) * 0.4));
   const edgeSoftness = root.edgeSoftness ?? 0.05;
+
+  shaderCache.set(shaderKey, { vertexShader, fragmentShader, extraUniforms });
 
   return {
     vertexShader,
