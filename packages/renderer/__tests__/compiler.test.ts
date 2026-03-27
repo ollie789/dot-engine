@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { field, shape, grid, sphere, smoothUnion } from '../../core/src/index.js';
-import { compileField } from '../src/compiler/compiler.js';
+import { field, shape, grid, sphere, smoothUnion, displace } from '../../core/src/index.js';
+import { compileField, getShaderKey } from '../src/compiler/compiler.js';
 
 describe('compileField', () => {
   it('sphere field: vertexShader contains void main(), length(p), radius, and uniforms', () => {
@@ -111,5 +111,77 @@ describe('compileField', () => {
     const compiled = compileField(root);
     // avgRes = 10, avgBounds = 2, autoSize = (2/10) * 0.4 = 0.08 → clamped to max 0.05
     expect(compiled.autoSize).toBeCloseTo(0.05, 3);
+  });
+});
+
+describe('getShaderKey', () => {
+  it('same structure, different bounds → same key', () => {
+    const f1 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10], bounds: [2, 2, 2] as [number, number, number] }),
+    );
+    const f2 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [20, 10, 10], bounds: [4, 2, 2] as [number, number, number] }),
+    );
+    expect(getShaderKey(f1)).toBe(getShaderKey(f2));
+  });
+
+  it('same structure, different edgeSoftness → same key', () => {
+    const base = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    const f1 = { ...base, edgeSoftness: 0.05 };
+    const f2 = { ...base, edgeSoftness: 0.1 };
+    expect(getShaderKey(f1)).toBe(getShaderKey(f2));
+  });
+
+  it('different SDF → different key', () => {
+    const f1 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    const f2 = field(
+      shape(sphere(0.8)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    expect(getShaderKey(f1)).not.toBe(getShaderKey(f2));
+  });
+
+  it('with vs without displacement → different key', () => {
+    const f1 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+    );
+    const f2 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10] }),
+      displace({ type: 'simplex3D', scale: 1, speed: 0.5 }, { amount: 0.1 }),
+    );
+    expect(getShaderKey(f1)).not.toBe(getShaderKey(f2));
+  });
+});
+
+describe('shader caching', () => {
+  it('bounds-only change returns same shader source strings', () => {
+    const f1 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [10, 10, 10], bounds: [2, 2, 2] as [number, number, number] }),
+    );
+    const f2 = field(
+      shape(sphere(0.5)),
+      grid({ type: 'uniform', resolution: [20, 10, 10], bounds: [4, 2, 2] as [number, number, number] }),
+    );
+    const c1 = compileField(f1);
+    const c2 = compileField(f2);
+
+    // Same shader source (reference equality from cache)
+    expect(c1.vertexShader).toBe(c2.vertexShader);
+    expect(c1.fragmentShader).toBe(c2.fragmentShader);
+
+    // Different instance parameters
+    expect(c1.bounds).not.toEqual(c2.bounds);
+    expect(c1.resolution).not.toEqual(c2.resolution);
   });
 });
