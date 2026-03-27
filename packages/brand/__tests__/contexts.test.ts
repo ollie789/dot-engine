@@ -161,6 +161,49 @@ describe('buildContextField()', () => {
     // Wide canvas should extend X bounds beyond the default 3:1 banner aspect
     expect(wideGrid.bounds[0]).toBeGreaterThan(narrowGrid.bounds[0]);
   });
+
+  it('logo scales X resolution proportionally when canvasAspect stretches bounds', () => {
+    const brand = makeMockBrand();
+    const params = makeMockParams();
+    const narrow = buildLogoField(brand, params);
+    const wide = buildLogoField(brand, params, { canvasAspect: 4 });
+
+    const narrowGrid = narrow.children.find(c => c.type === 'grid') as any;
+    const wideGrid = wide.children.find(c => c.type === 'grid') as any;
+
+    // X resolution should scale proportionally with bounds stretch
+    const boundsRatio = wideGrid.bounds[0] / narrowGrid.bounds[0];
+    const resRatio = wideGrid.resolution[0] / narrowGrid.resolution[0];
+    expect(resRatio).toBeCloseTo(boundsRatio, 0);
+  });
+
+  it('hero scales X resolution proportionally when canvasAspect stretches bounds', () => {
+    const brand = makeMockBrand();
+    const params = makeMockParams();
+    const narrow = buildHeroField(brand, params);
+    const wide = buildHeroField(brand, params, { canvasAspect: 4 });
+
+    const narrowGrid = narrow.children.find(c => c.type === 'grid') as any;
+    const wideGrid = wide.children.find(c => c.type === 'grid') as any;
+
+    const boundsRatio = wideGrid.bounds[0] / narrowGrid.bounds[0];
+    const resRatio = wideGrid.resolution[0] / narrowGrid.resolution[0];
+    expect(resRatio).toBeCloseTo(boundsRatio, 0);
+  });
+
+  it('banner scales X resolution proportionally when canvasAspect exceeds banner aspect', () => {
+    const brand = makeMockBrand();
+    const params = makeMockParams();
+    const narrow = buildBannerField(brand, params);
+    const wide = buildBannerField(brand, params, { canvasAspect: 6 });
+
+    const narrowGrid = narrow.children.find(c => c.type === 'grid') as any;
+    const wideGrid = wide.children.find(c => c.type === 'grid') as any;
+
+    const boundsRatio = wideGrid.bounds[0] / narrowGrid.bounds[0];
+    const resRatio = wideGrid.resolution[0] / narrowGrid.resolution[0];
+    expect(resRatio).toBeCloseTo(boundsRatio, 0);
+  });
 });
 
 describe('transition context', () => {

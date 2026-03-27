@@ -41,7 +41,7 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
   // Scale resolution so there are enough dots along the narrowest axis.
   // Base: personality density drives a minimum of 30-80 dots on the short axis.
   const shortAxisDots = Math.round(30 + params.gridResolution * 0.8);
-  const rx = Math.round(shortAxisDots * Math.max(1, aspect));
+  let rx = Math.round(shortAxisDots * Math.max(1, aspect));
   const ry = shortAxisDots;
   const rz = Math.max(4, Math.round(shortAxisDots * 0.15)); // very thin Z for flat logos
 
@@ -54,8 +54,9 @@ export function buildLogoField(brand: Brand, params: MappedParams, options?: Con
   if (options?.canvasAspect && options.canvasAspect > 0) {
     const gridAspect = bx / by;
     if (options.canvasAspect > gridAspect) {
-      // Canvas is wider than grid — extend X
+      const stretch = options.canvasAspect / gridAspect;
       bx = by * options.canvasAspect;
+      rx = Math.round(rx * stretch);
     }
   }
 
@@ -85,7 +86,7 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
   const speed = brand.config.motion.speed * params.animateSpeed * 0.5;
   const aspect = brand.logo.aspectRatio;
   const shortAxisDots = Math.round(40 + params.gridResolution * 0.8);
-  const rx = Math.round(shortAxisDots * Math.max(1, aspect));
+  let rx = Math.round(shortAxisDots * Math.max(1, aspect));
   const ry = shortAxisDots;
   const rz = Math.max(6, Math.round(shortAxisDots * 0.2));
   let bx = Math.max(1, aspect);
@@ -94,7 +95,9 @@ export function buildHeroField(brand: Brand, params: MappedParams, options?: Con
   if (options?.canvasAspect && options.canvasAspect > 0) {
     const gridAspect = bx / 1;
     if (options.canvasAspect > gridAspect) {
+      const stretch = options.canvasAspect / gridAspect;
       bx = options.canvasAspect;
+      rx = Math.round(rx * stretch);
     }
   }
 
@@ -147,7 +150,13 @@ export function buildBannerField(brand: Brand, params: MappedParams, options?: C
   const aspect = brand.logo.aspectRatio;
   // Banners are extra wide — boost X resolution
   const shortAxisDots = Math.round(25 + params.gridResolution * 0.6);
-  const bannerAspect = Math.max(aspect, 3); // banners are at least 3:1
+  let bannerAspect = Math.max(aspect, 3); // banners are at least 3:1
+
+  // Adapt grid bounds to canvas aspect ratio
+  if (options?.canvasAspect && options.canvasAspect > bannerAspect) {
+    bannerAspect = options.canvasAspect;
+  }
+
   const rx = Math.round(shortAxisDots * bannerAspect);
   const ry = shortAxisDots;
   const rz = Math.max(3, Math.round(shortAxisDots * 0.1));
