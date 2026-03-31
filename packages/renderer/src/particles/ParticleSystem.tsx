@@ -99,11 +99,11 @@ export function ParticleSystem({
       const si = i * PARTICLE_STRIDE;
       dummy.position.set(pool[si], pool[si + 1], pool[si + 2]);
       const alpha = getParticleAlpha(pool, i, fadeIn, fadeOut);
-      const s = size * (0.5 + 0.5 * alpha);
+      const s = size * (0.6 + 0.4 * alpha);
       dummy.scale.set(s, s, s);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
-      opacityArr[i] = alpha * 0.6;
+      opacityArr[i] = alpha * 0.85;
     }
 
     mesh.count = alive;

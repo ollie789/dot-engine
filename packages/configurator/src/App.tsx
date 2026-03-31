@@ -230,7 +230,7 @@ export function App() {
             colorAccent={colorAccent}
             isLoading={isLoading}
             particleMode={advancedSettings.particleMode}
-            particleSize={advancedSettings.dotSizeMax ?? 0.015}
+            particleSize={(advancedSettings.dotSizeMax ?? 0.015) * 2.5}
             imageData={imageData}
             colorFromImage={colorFromImage}
             format={activeFormat}

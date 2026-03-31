@@ -18,31 +18,31 @@ export function buildParticles(
   switch (mode) {
     case 'ambient':
       return particles({
-        emitter: pointEmitter([0, 0, 0], 5 + params.animateSpeed * 10),
-        lifecycle: { lifetime: 3 + (1 - params.animateSpeed) * 4, fadeIn: 0.5, fadeOut: 1.5 },
-        motion: { speed: speed * 0.15, spread: 1, drag: 0.3, turbulence: amount * 1.5 },
-        maxParticles: 80,
+        emitter: pointEmitter([0, 0, 0], 8 + params.animateSpeed * 15),
+        lifecycle: { lifetime: 3 + (1 - params.animateSpeed) * 3, fadeIn: 0.3, fadeOut: 1.0 },
+        motion: { speed: 0.1 + speed * 0.3, spread: 1, drag: 0.15, turbulence: 0.3 + amount * 2 },
+        maxParticles: 100,
       });
     case 'burst':
       return particles({
-        emitter: { type: 'point', position: [0, 0, 0], rate: 0, burst: 30 },
-        lifecycle: { lifetime: 1.5 + speed, fadeIn: 0.05, fadeOut: 0.8 },
-        motion: { speed: 0.5 + speed * 0.3, spread: 1, gravity: [0, -0.2, 0], drag: 0.1 },
-        maxParticles: 50,
+        emitter: { type: 'point', position: [0, 0, 0], rate: 0, burst: 40 },
+        lifecycle: { lifetime: 1.2 + speed * 0.8, fadeIn: 0.03, fadeOut: 0.6 },
+        motion: { speed: 0.8 + speed * 0.5, spread: 1, gravity: [0, -0.3, 0], drag: 0.05, turbulence: 0.1 },
+        maxParticles: 60,
       });
     case 'rising':
       return particles({
-        emitter: pointEmitter([0, -1, 0], 5 + params.animateSpeed * 8),
-        lifecycle: { lifetime: 3, fadeIn: 0.3, fadeOut: 1 },
-        motion: { velocity: [0, 1, 0], speed: 0.15 + speed * 0.2, spread: 0.3, turbulence: amount * 1 },
-        maxParticles: 60,
+        emitter: pointEmitter([0, -1.2, 0], 8 + params.animateSpeed * 12),
+        lifecycle: { lifetime: 2.5, fadeIn: 0.2, fadeOut: 0.8 },
+        motion: { velocity: [0, 1, 0], speed: 0.25 + speed * 0.4, spread: 0.25, drag: 0.05, turbulence: 0.2 + amount * 1.5 },
+        maxParticles: 80,
       });
     case 'edges':
       return particles({
-        emitter: surfaceEmitter(5 + params.animateSpeed * 10),
-        lifecycle: { lifetime: 2 + (1 - params.animateSpeed) * 2, fadeIn: 0.2, fadeOut: 1.2 },
-        motion: { speed: speed * 0.1, spread: 0.8, drag: 0.5, turbulence: amount * 1.5 },
-        maxParticles: 60,
+        emitter: surfaceEmitter(10 + params.animateSpeed * 15),
+        lifecycle: { lifetime: 1.5 + (1 - params.animateSpeed) * 1.5, fadeIn: 0.1, fadeOut: 0.8 },
+        motion: { speed: 0.15 + speed * 0.3, spread: 0.6, drag: 0.2, turbulence: 0.3 + amount * 2 },
+        maxParticles: 80,
       });
     default:
       return null;

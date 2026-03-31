@@ -148,10 +148,10 @@ export function updateParticlePool(
     }
   }
 
-  const noiseScale = fieldParams?.useFlowField ? 2.5 : 4.0;
-  const noiseSpeed = fieldParams?.animateSpeed ?? 0.5;
+  const noiseScale = fieldParams?.useFlowField ? 2.0 : 3.0;
+  const noiseSpeed = (fieldParams?.animateSpeed ?? 0.5) * 1.5;
   const turbMag = fieldParams
-    ? turbulence * (fieldParams.displacementAmount / 0.08)
+    ? turbulence * (1 + fieldParams.displacementAmount * 5)
     : turbulence;
   const t = globalTime ?? 0;
 
