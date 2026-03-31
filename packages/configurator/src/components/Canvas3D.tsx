@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { DotField, DotFieldErrorBoundary, usePointerInfluence, ParticleSystem } from '@bigpuddle/dot-engine-renderer';
+import type { ParticleSdfData, ParticleFieldParams } from '@bigpuddle/dot-engine-renderer';
 import type { Brand, BrandContext, ImageFieldData } from '@bigpuddle/dot-engine-brand';
 import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
 import { imageField, shape, sphere } from '@bigpuddle/dot-engine-core';
@@ -183,6 +184,28 @@ function Scene({
     [brand, particleMode],
   );
 
+  const particleSdfData = useMemo((): ParticleSdfData | undefined => {
+    if (!brand?.logo?.sdfTexture?.length) return undefined;
+    const { sdfTexture, width, height, aspectRatio, sdfNode } = brand.logo;
+    return {
+      texture: sdfTexture,
+      width,
+      height,
+      aspectRatio,
+      depth: sdfNode && 'depth' in sdfNode ? sdfNode.depth : 0.3,
+    };
+  }, [brand]);
+
+  const particleFieldParams = useMemo((): ParticleFieldParams | undefined => {
+    if (!brand) return undefined;
+    const { personality, motion } = brand.config;
+    return {
+      animateSpeed: motion.speed * personality.energy,
+      displacementAmount: 0.02 + 0.13 * personality.energy,
+      useFlowField: personality.organic > 0.5,
+    };
+  }, [brand]);
+
   if (!fieldRoot) return null;
 
   return (
@@ -199,7 +222,13 @@ function Scene({
         imageTextures={imageTextures}
       />
       {particleConfig && (
-        <ParticleSystem config={particleConfig} color={colorAccent} size={particleSize ?? 0.01} />
+        <ParticleSystem
+          config={particleConfig}
+          color={colorAccent}
+          size={particleSize ?? 0.01}
+          sdfData={particleSdfData}
+          fieldParams={particleFieldParams}
+        />
       )}
       <OrbitControls />
     </>
