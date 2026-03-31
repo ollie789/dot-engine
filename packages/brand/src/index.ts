@@ -15,3 +15,5 @@ export { BrandMoment } from './components/BrandMoment.js';
 export type { BrandMomentProps } from './components/BrandMoment.js';
 export { buildParticles } from './brand/particle-presets.js';
 export type { ParticleMode } from './brand/particle-presets.js';
+export { SHAPE_GALLERY, getShape } from './shapes/gallery.js';
+export type { GalleryShape, ShapeBuildParams } from './shapes/types.js';
