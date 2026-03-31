@@ -11,7 +11,7 @@ export { usePointerInfluence, type PointerInfluenceOptions, type PointerInfluenc
 export { useScrollInfluence, type ScrollInfluenceOptions, type ScrollInfluence } from './hooks/useScrollInfluence.js';
 export { useSpring3D, type Spring3DOptions, type Spring3D } from './hooks/useSpring3D.js';
 export { useTransition, type TransitionOptions, type TransitionState } from './hooks/useTransition.js';
-export { ParticleSystem, type ParticleSystemProps } from './particles/ParticleSystem.js';
+export { ParticleSystem, type ParticleSystemProps, type ParticleSdfData, type ParticleFieldParams } from './particles/ParticleSystem.js';
 export {
   createParticlePool,
   updateParticlePool,
