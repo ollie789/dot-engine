@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData } from '@bigpuddle/dot-engine-brand';
+import { defineBrand, text, type Brand, type BrandContext, type ImageFieldData, type LogoInput } from '@bigpuddle/dot-engine-brand';
 import { TopBar } from './components/TopBar';
 import { Canvas3D, computeCanvasRect } from './components/Canvas3D';
 import { BottomBar } from './components/BottomBar';
@@ -19,6 +19,7 @@ export function App() {
   const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageData, setImageData] = useState<ImageFieldData | null>(null);
+  const [fileLogoInput, setFileLogoInput] = useState<LogoInput | null>(null);
   const [imageResolution, setImageResolution] = useState(128);
   const [colorFromImage, setColorFromImage] = useState(true);
   const [fontWeight, setFontWeight] = useState(600);
@@ -88,7 +89,9 @@ export function App() {
       try {
         const b = await defineBrand({
           name,
-          logo: text(name, { font: logoFont, weight: fontWeight }),
+          logo: logoMode === 'file' && fileLogoInput
+            ? fileLogoInput
+            : text(name, { font: logoFont, weight: fontWeight }),
           colors: {
             primary: colorPrimary,
             accent: colorAccent,
@@ -114,6 +117,8 @@ export function App() {
     return () => clearTimeout(timer);
   }, [
     name,
+    logoMode,
+    fileLogoInput,
     logoFont,
     fontWeight,
     colorPrimary,
@@ -191,6 +196,7 @@ export function App() {
           colorBackground={colorBackground}
           setColorBackground={setColorBackground}
           onImageLoad={setImageData}
+          onFileLoad={setFileLogoInput}
           activeVibe={activeVibe}
           setActiveVibe={handleVibeChange}
           intensity={intensity}

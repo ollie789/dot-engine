@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ColorSwatch } from './ColorSwatch';
 import { Slider } from './Slider';
 import { loadImageForField } from '@bigpuddle/dot-engine-brand';
-import type { MotionStyle, ImageFieldData } from '@bigpuddle/dot-engine-brand';
+import type { MotionStyle, ImageFieldData, LogoInput } from '@bigpuddle/dot-engine-brand';
 import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
 import { VIBES, type Vibe, type VibeSettings } from '../vibes';
 
@@ -33,6 +33,7 @@ export interface LeftPanelProps {
   colorBackground: string;
   setColorBackground: (c: string) => void;
   onImageLoad: (data: ImageFieldData) => void;
+  onFileLoad: (input: LogoInput) => void;
 
   // Vibe system
   activeVibe: Vibe;
@@ -82,6 +83,7 @@ export function LeftPanel({
   colorBackground,
   setColorBackground,
   onImageLoad,
+  onFileLoad,
   activeVibe,
   setActiveVibe,
   intensity,
@@ -107,6 +109,20 @@ export function LeftPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext === 'svg') {
+      onFileLoad({ type: 'svg', source: url });
+    } else {
+      onFileLoad({ type: 'image', source: url });
+    }
+    setLogoMode('file');
+    e.target.value = '';
+  }
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -171,7 +187,7 @@ export function LeftPanel({
           type="file"
           accept=".svg,.png,.jpg"
           style={{ display: 'none' }}
-          onChange={() => setLogoMode('file')}
+          onChange={handleFileChange}
         />
         <input
           ref={imageInputRef}
