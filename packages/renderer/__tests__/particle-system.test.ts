@@ -5,8 +5,9 @@ import {
   getParticleAlpha,
   PARTICLE_STRIDE,
 } from '../src/particles/particlePool.js';
-import { particles, pointEmitter, burstEmitter } from '../../core/src/nodes/particles.js';
+import { particles, pointEmitter, burstEmitter, surfaceEmitter } from '../../core/src/nodes/particles.js';
 import { _resetIds } from '../../core/src/nodes/types.js';
+import type { ParticleSdfData } from '../src/particles/sdfSampler.js';
 
 beforeEach(() => {
   _resetIds();
@@ -20,6 +21,18 @@ function makeConfig(overrides?: Partial<Parameters<typeof particles>[0]>) {
     maxParticles: 100,
     ...overrides,
   });
+}
+
+function makeCircleSdf(size: number): ParticleSdfData {
+  const texture = new Float32Array(size * size);
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const u = (col + 0.5) / size;
+      const v = (row + 0.5) / size;
+      texture[row * size + col] = Math.sqrt((u - 0.5) ** 2 + (v - 0.5) ** 2) - 0.3;
+    }
+  }
+  return { texture, width: size, height: size, aspectRatio: 1, depth: 0.3 };
 }
 
 describe('createParticlePool', () => {
@@ -197,5 +210,56 @@ describe('getParticleAlpha', () => {
 describe('PARTICLE_STRIDE', () => {
   it('is 8', () => {
     expect(PARTICLE_STRIDE).toBe(8);
+  });
+});
+
+describe('surface emitter with SDF data', () => {
+  it('spawns particles near the SDF boundary', () => {
+    const config = makeConfig({
+      emitter: surfaceEmitter(100),
+      lifecycle: { lifetime: 5 },
+      motion: { speed: 0 },
+    });
+    const sdf = makeCircleSdf(64);
+    const state = createParticlePool(50);
+    updateParticlePool(state, 0.1, config, 50, sdf);
+    expect(state.alive).toBeGreaterThan(0);
+
+    for (let i = 0; i < state.alive; i++) {
+      const si = i * PARTICLE_STRIDE;
+      const x = state.pool[si];
+      const y = state.pool[si + 1];
+      const u = x / 2 + 0.5;
+      const v = 0.5 - y / 2;
+      const dist = Math.sqrt((u - 0.5) ** 2 + (v - 0.5) ** 2);
+      expect(Math.abs(dist - 0.3)).toBeLessThan(0.1);
+    }
+  });
+});
+
+describe('surface emitter without SDF data (fallback)', () => {
+  it('falls back to random cube spawn', () => {
+    const config = makeConfig({
+      emitter: surfaceEmitter(100),
+      lifecycle: { lifetime: 5 },
+      motion: { speed: 0 },
+    });
+    const state = createParticlePool(50);
+    updateParticlePool(state, 0.1, config, 50);
+    expect(state.alive).toBeGreaterThan(0);
+  });
+});
+
+describe('global time in turbulence', () => {
+  it('accepts globalTime parameter without crashing', () => {
+    const config = makeConfig({
+      emitter: burstEmitter(5),
+      lifecycle: { lifetime: 5 },
+      motion: { speed: 0.1, turbulence: 0.5 },
+    });
+    const state = createParticlePool(20);
+    updateParticlePool(state, 0.016, config, 20);
+    updateParticlePool(state, 0.016, config, 20, undefined, undefined, 1.5);
+    expect(state.alive).toBe(5);
   });
 });
