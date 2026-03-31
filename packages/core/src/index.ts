@@ -90,5 +90,3 @@ export { evaluateSdf } from './evaluate.js';
 export type { Serializable, FromJSONOptions } from './serialize.js';
 export { toJSON, fromJSON } from './serialize.js';
 
-// Presets
-export { definePreset, presets, type PresetConfig } from './presets.js';

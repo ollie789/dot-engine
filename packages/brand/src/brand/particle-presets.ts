@@ -5,9 +5,6 @@ import type { MappedParams } from './personality.js';
 
 export type ParticleMode = 'none' | 'ambient' | 'burst' | 'rising' | 'edges';
 
-// Legacy alias used in existing exports
-export type ParticlePresetName = ParticleMode;
-
 export function buildParticles(
   mode: ParticleMode,
   config: BrandConfig,
@@ -41,7 +38,6 @@ export function buildParticles(
         maxParticles: 60,
       });
     case 'edges':
-      // Particles emit from the surface area (spread around origin matching the logo bounds)
       return particles({
         emitter: surfaceEmitter(5 + params.animateSpeed * 10),
         lifecycle: { lifetime: 2 + (1 - params.animateSpeed) * 2, fadeIn: 0.2, fadeOut: 1.2 },
@@ -52,26 +48,3 @@ export function buildParticles(
       return null;
   }
 }
-
-// Legacy static preset record — kept for backwards compatibility but now returns
-// sensible defaults using neutral brand config and default personality params
-const _defaultConfig: BrandConfig = {
-  colors: { primary: '#4a9eff', accent: '#ff6b4a', background: '#06060a' },
-  personality: { energy: 0.6, organic: 0.7, density: 0.5 },
-  motion: { style: 'flow', speed: 0.4 },
-  logo: { type: 'text', text: '' },
-};
-const _defaultParams: MappedParams = {
-  animateSpeed: 0.5,
-  displacementAmount: 0.08,
-  edgeSoftness: 0.05,
-  useFlowField: true,
-  gridResolution: 40,
-};
-
-export const particlePresets: Record<string, ParticleNode> = {
-  ambientDrift: buildParticles('ambient', _defaultConfig, _defaultParams)!,
-  burst: buildParticles('burst', _defaultConfig, _defaultParams)!,
-  rising: buildParticles('rising', _defaultConfig, _defaultParams)!,
-  edges: buildParticles('edges', _defaultConfig, _defaultParams)!,
-};
