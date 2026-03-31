@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { _resetIds, nodeId } from '../../core/src/nodes/types.js';
 import { textureSdf } from '../../core/src/sdf/texture.js';
+import { sphere } from '../../core/src/sdf/primitives.js';
 import { buildContextField, buildLogoField, buildHeroField, buildLoadingField, buildBannerField } from '../src/brand/contexts.js';
 import { buildDataField } from '../src/brand/data-field.js';
 import type { Brand, DataPoint } from '../src/brand/types.js';
@@ -214,5 +215,70 @@ describe('transition context', () => {
     const heroField = buildHeroField(brand, params);
     expect(logoField.type).toBe('field');
     expect(heroField.type).toBe('field');
+  });
+});
+
+describe('per-context shape overrides', () => {
+  it('buildBannerField uses logo SDF when no override', () => {
+    const brand = makeMockBrand();
+    const params = makeMockParams();
+    const result = buildBannerField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('textureSdf');
+  });
+
+  it('buildBannerField uses gallery shape when contextShapes override is set', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { banner: 'sphere' };
+    const params = makeMockParams();
+    const result = buildBannerField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('sphere');
+  });
+
+  it('buildHeroField uses gallery shape when override is set', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { hero: 'torus' };
+    const params = makeMockParams();
+    const result = buildHeroField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('torus');
+  });
+
+  it('buildLogoField always uses logo SDF even with override', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { logo: 'sphere' };
+    const params = makeMockParams();
+    const result = buildLogoField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('textureSdf');
+  });
+
+  it('falls back to logo SDF for unknown gallery shape name', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { banner: 'nonexistent-shape' };
+    const params = makeMockParams();
+    const result = buildBannerField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('textureSdf');
+  });
+
+  it('accepts raw SdfNode as override', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { banner: sphere(0.5) };
+    const params = makeMockParams();
+    const result = buildBannerField(brand, params);
+    const shapeNode = result.children.find(c => c.type === 'shape') as any;
+    expect(shapeNode.sdf.type).toBe('sphere');
+  });
+
+  it('different contexts can have different overrides', () => {
+    const brand = makeMockBrand();
+    brand.config.contextShapes = { banner: 'sphere', hero: 'torus' };
+    const params = makeMockParams();
+    const bannerShape = buildBannerField(brand, params).children.find(c => c.type === 'shape') as any;
+    const heroShape = buildHeroField(brand, params).children.find(c => c.type === 'shape') as any;
+    expect(bannerShape.sdf.type).toBe('sphere');
+    expect(heroShape.sdf.type).toBe('torus');
   });
 });

@@ -1,5 +1,6 @@
 import type { FieldRoot } from '@bigpuddle/dot-engine-core';
 import type { ParticleNode } from '@bigpuddle/dot-engine-core';
+import type { SdfNode } from '@bigpuddle/dot-engine-core';
 import type { LogoInput, ProcessedLogo } from '../logo/types.js';
 import type { PersonalityTraits } from './personality.js';
 import type { MotionStyle } from './motion.js';
@@ -53,6 +54,7 @@ export interface BrandConfig {
     style: MotionStyle;
     speed: number;
   };
+  contextShapes?: Partial<Record<BrandContext, string | SdfNode>>;
 }
 
 export interface Brand {
