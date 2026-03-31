@@ -30,7 +30,11 @@ export function App() {
   const [opacityMin, setOpacityMin] = useState(0.3);
   const [opacityMax, setOpacityMax] = useState(1.0);
   const [opacityMode, setOpacityMode] = useState<'depth' | 'edgeGlow' | 'uniform'>('depth');
-  const [contextShapes, setContextShapes] = useState<Partial<Record<BrandContext, string | null>>>({});
+  const [contextShapes, setContextShapes] = useState<Partial<Record<BrandContext, string | null>>>({
+    hero: 'sphere',
+    banner: 'wave-field',
+    loading: 'dot-matrix',
+  });
 
   // Clear image data when switching back to text mode
   useEffect(() => {
