@@ -30,6 +30,7 @@ export function App() {
   const [opacityMin, setOpacityMin] = useState(0.3);
   const [opacityMax, setOpacityMax] = useState(1.0);
   const [opacityMode, setOpacityMode] = useState<'depth' | 'edgeGlow' | 'uniform'>('depth');
+  const [contextShapes, setContextShapes] = useState<Partial<Record<BrandContext, string | null>>>({});
 
   // Clear image data when switching back to text mode
   useEffect(() => {
@@ -106,6 +107,9 @@ export function App() {
             speed: advancedSettings.motionSpeed,
             style: advancedSettings.motionStyle,
           },
+          contextShapes: Object.fromEntries(
+            Object.entries(contextShapes).filter(([, v]) => v != null)
+          ),
         });
         setBrand(b);
       } catch (e) {
@@ -129,6 +133,7 @@ export function App() {
     advancedSettings.density,
     advancedSettings.motionStyle,
     advancedSettings.motionSpeed,
+    contextShapes,
   ]);
 
   // Context options include shape transforms, dot sizes, color mode, and opacity
@@ -218,6 +223,9 @@ export function App() {
           setOpacityMax={setOpacityMax}
           opacityMode={opacityMode}
           setOpacityMode={setOpacityMode}
+          activeContext={activeContext}
+          contextShapes={contextShapes}
+          setContextShapes={setContextShapes}
         />
 
         {/* Canvas container */}

@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { ColorSwatch } from './ColorSwatch';
 import { Slider } from './Slider';
-import { loadImageForField } from '@bigpuddle/dot-engine-brand';
-import type { MotionStyle, ImageFieldData, LogoInput } from '@bigpuddle/dot-engine-brand';
+import { loadImageForField, SHAPE_GALLERY } from '@bigpuddle/dot-engine-brand';
+import type { MotionStyle, ImageFieldData, LogoInput, BrandContext } from '@bigpuddle/dot-engine-brand';
 import type { ParticleMode } from '@bigpuddle/dot-engine-brand';
 import { VIBES, type Vibe, type VibeSettings } from '../vibes';
 
@@ -67,6 +67,11 @@ export interface LeftPanelProps {
   setImageResolution: (r: number) => void;
   colorFromImage: boolean;
   setColorFromImage: (v: boolean) => void;
+
+  // Shape override
+  activeContext: BrandContext;
+  contextShapes: Partial<Record<BrandContext, string | null>>;
+  setContextShapes: (shapes: Partial<Record<BrandContext, string | null>>) => void;
 }
 
 export function LeftPanel({
@@ -105,6 +110,9 @@ export function LeftPanel({
   setImageResolution,
   colorFromImage,
   setColorFromImage,
+  activeContext,
+  contextShapes,
+  setContextShapes,
 }: LeftPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -497,6 +505,64 @@ export function LeftPanel({
               {colorFromImage ? 'ON' : 'OFF'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Shape Override (non-logo contexts only) */}
+      {activeContext !== 'logo' && (
+        <div className="panel-section">
+          <div className="section-title" style={{ color: 'var(--accent-green)' }}>
+            Shape
+          </div>
+          <div className="toggle-row" style={{ marginBottom: 8 }}>
+            <span className="panel-label">Custom shape</span>
+            <button
+              className={`panel-toggle${contextShapes[activeContext] != null ? ' active' : ''}`}
+              onClick={() => {
+                if (contextShapes[activeContext] != null) {
+                  setContextShapes({ ...contextShapes, [activeContext]: null });
+                } else {
+                  setContextShapes({ ...contextShapes, [activeContext]: SHAPE_GALLERY[0].name });
+                }
+              }}
+              aria-label="Shape override toggle"
+            >
+              {contextShapes[activeContext] != null ? 'ON' : 'OFF'}
+            </button>
+          </div>
+
+          {contextShapes[activeContext] != null && (
+            <>
+              <div className="panel-label" style={{ marginBottom: 4 }}>Patterns</div>
+              <div className="vibe-grid" style={{ marginBottom: 8 }}>
+                {SHAPE_GALLERY.filter(s => s.category === 'pattern').map(shape => (
+                  <button
+                    key={shape.name}
+                    className={`vibe-card${contextShapes[activeContext] === shape.name ? ' active' : ''}`}
+                    onClick={() => setContextShapes({ ...contextShapes, [activeContext]: shape.name })}
+                    title={shape.description}
+                  >
+                    <span className="vibe-icon">{shape.icon}</span>
+                    <span className="vibe-name">{shape.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="panel-label" style={{ marginBottom: 4 }}>Shapes</div>
+              <div className="vibe-grid">
+                {SHAPE_GALLERY.filter(s => s.category === 'shape').map(shape => (
+                  <button
+                    key={shape.name}
+                    className={`vibe-card${contextShapes[activeContext] === shape.name ? ' active' : ''}`}
+                    onClick={() => setContextShapes({ ...contextShapes, [activeContext]: shape.name })}
+                    title={shape.description}
+                  >
+                    <span className="vibe-icon">{shape.icon}</span>
+                    <span className="vibe-name">{shape.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
