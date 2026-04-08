@@ -259,8 +259,8 @@ export function DotField({
     initWebGPUCompute(compiledWgsl.computeShader, totalDots).then(ctx => {
       if (destroyed) { destroyCompute(ctx); return; }
       computeCtxRef.current = ctx;
-    }).catch(err => {
-      console.warn('[dot-engine] WebGPU compute init failed, using WebGL fallback:', err.message);
+    }).catch(() => {
+      // WebGPU unavailable — falls back to WebGL silently
     });
     return () => {
       destroyed = true;

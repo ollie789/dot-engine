@@ -36,17 +36,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@bigpuddle/dot-engine-core": "workspace:*"
+    "@bigpuddle/dot-engine-core": "workspace:*",
+    "@bigpuddle/dot-engine-renderer": "workspace:*"
   },
   "peerDependencies": {
-    "@bigpuddle/dot-engine-renderer": "^0.2.0",
     "@react-three/drei": "^10.0.0",
     "@react-three/fiber": "^9.0.0",
     "react": "^19.0.0",
     "three": "^0.175.0"
   },
   "devDependencies": {
-    "@bigpuddle/dot-engine-renderer": "workspace:*",
     "@react-three/fiber": "^9.5.0",
     "@react-three/drei": "^10.7.7",
     "@types/react": "^19.2.14",

@@ -27,7 +27,6 @@ export class DotFieldErrorBoundary extends React.Component<DotFieldErrorBoundary
   }
 
   componentDidCatch(error: Error) {
-    console.error('[dot-engine] Render error caught by DotFieldErrorBoundary:', error);
     this.props.onError?.(error);
   }
 
