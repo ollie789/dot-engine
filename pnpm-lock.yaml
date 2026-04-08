@@ -20,10 +20,10 @@ importers:
       '@bigpuddle/dot-engine-core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       '@bigpuddle/dot-engine-renderer':
         specifier: workspace:*
         version: link:../renderer
+    devDependencies:
       '@react-three/drei':
         specifier: ^10.7.7
         version: 10.7.7(@react-three/fiber@9.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/react@19.2.14)(@types/three@0.183.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)

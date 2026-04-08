@@ -94,8 +94,7 @@ function emitNode(node: SdfNode, out: Map<string, GlslSnippet>): string {
     }
 
     case 'fromField2D': {
-      console.warn('fromField2D is not implemented in Phase 1 GLSL compiler; returning 1e10');
-      body = `  return 1e10;`;
+      body = `  return 1e10;`; // fromField2D not yet implemented
       break;
     }
 

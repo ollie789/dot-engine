@@ -323,9 +323,9 @@ function collectTextureUniforms(node: SdfNode, out: Record<string, ExtraUniform>
     return;
   }
   // Recurse into boolean children
-  if ('a' in node) collectTextureUniforms((node as any).a, out);
-  if ('b' in node) collectTextureUniforms((node as any).b, out);
-  if ('child' in node) collectTextureUniforms((node as any).child, out);
+  if ('a' in node) collectTextureUniforms((node as { a: SdfNode }).a, out);
+  if ('b' in node) collectTextureUniforms((node as { b: SdfNode }).b, out);
+  if ('child' in node) collectTextureUniforms((node as { child: SdfNode }).child, out);
 }
 
 export function compileField(root: FieldRoot): CompiledField {
