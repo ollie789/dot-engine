@@ -1,6 +1,6 @@
 {
   "name": "@bigpuddle/dot-engine",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A 3D dot-field branding engine — turn any logo, text, or image into a living dot field",
   "license": "MIT",
   "author": "bigpuddle",
