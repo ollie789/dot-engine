@@ -24,6 +24,10 @@ export interface DotFieldProps {
   imageTextures?: Record<string, THREE.Texture>;
   /** 0..1 multiplier applied to every dot's alpha. Default 1. */
   opacity?: number;
+  /** Position offset for the imperatively-added InstancedMesh. Default [0,0,0]. */
+  meshPosition?: [number, number, number];
+  /** Uniform scale for the InstancedMesh. Default 1. */
+  meshScale?: number;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -60,6 +64,8 @@ export function DotField({
   textures,
   imageTextures,
   opacity = 1,
+  meshPosition = [0, 0, 0],
+  meshScale = 1,
 }: DotFieldProps) {
   // WebGPU detection and stub
   const useWebGpu =
@@ -200,6 +206,15 @@ export function DotField({
       meshRef.current = null;
     };
   }, [scene, maxCapacity]); // Only recreate if scene or max capacity changes
+
+  // Apply mesh transform from props (the mesh is added imperatively to the
+  // scene root, so it does not inherit parent group transforms).
+  useEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh) return;
+    mesh.position.set(meshPosition[0], meshPosition[1], meshPosition[2]);
+    mesh.scale.setScalar(meshScale);
+  }, [meshPosition, meshScale]);
 
   // Swap geometry when LOD complexity changes
   useEffect(() => {
