@@ -10,6 +10,8 @@ export interface MorphFieldProps {
   progress: number;
   colorFrom?: { primary: string; accent: string };
   colorTo?: { primary: string; accent: string };
+  /** 0..1 multiplier applied to every dot's alpha. Default 1. */
+  opacity?: number;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -23,6 +25,7 @@ export function MorphField({
   progress,
   colorFrom = { primary: '#4a9eff', accent: '#ff6b4a' },
   colorTo = { primary: '#4a9eff', accent: '#ff6b4a' },
+  opacity = 1,
 }: MorphFieldProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null!);
 
@@ -40,6 +43,7 @@ export function MorphField({
         uColorAccent: { value: hexToVec3(colorFrom.accent) },
         uPointer: { value: new THREE.Vector2(0, 0) },
         uPointerStrength: { value: 0 },
+        uGlobalOpacity: { value: 1 },
         uMorphProgress: { value: 0 },
         uFromEdgeSoftness: { value: compiled.fromEdgeSoftness },
         uToEdgeSoftness: { value: compiled.toEdgeSoftness },
@@ -68,6 +72,7 @@ export function MorphField({
   useFrame(({ clock }) => {
     material.uniforms.uTime.value = clock.elapsedTime;
     material.uniforms.uMorphProgress.value = progress;
+    material.uniforms.uGlobalOpacity.value = opacity;
 
     // Only re-parse when hex strings change
     if (fromPrimRef.current !== colorFrom.primary) { fromPrimRef.current = colorFrom.primary; parsedFromPrim.current.set(colorFrom.primary); }
