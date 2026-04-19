@@ -7,6 +7,7 @@ varying vec2 vImgUv;
 uniform vec3 uColorPrimary;
 uniform vec3 uColorAccent;
 uniform float uTime;
+uniform float uGlobalOpacity;
 
 {{FRAGMENT_FUNCTIONS}}
 
@@ -16,6 +17,6 @@ void main() {
   {{COLOR_LOGIC}}
 
   float alpha = {{OPACITY_EXPR}};
-  gl_FragColor = vec4(color, alpha);
+  gl_FragColor = vec4(color, alpha * uGlobalOpacity);
 }
 `;
