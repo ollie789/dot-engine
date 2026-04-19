@@ -22,6 +22,8 @@ export interface DotFieldProps {
   textures?: Record<string, { texture: THREE.DataTexture; depth: number; aspectRatio: number }>;
   /** Image field texture (for ImageFieldNode). Keyed by textureId, value is DataTexture or VideoTexture. */
   imageTextures?: Record<string, THREE.Texture>;
+  /** 0..1 multiplier applied to every dot's alpha. Default 1. */
+  opacity?: number;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -57,6 +59,7 @@ export function DotField({
   pointerStrength,
   textures,
   imageTextures,
+  opacity = 1,
 }: DotFieldProps) {
   // WebGPU detection and stub
   const useWebGpu =
@@ -140,6 +143,7 @@ export function DotField({
       uColorAccent: { value: hexToVec3(colorAccent) },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerStrength: { value: 0 },
+      uGlobalOpacity: { value: 1 },
       uEdgeSoftness: { value: compiled.edgeSoftness },
       uAutoSize: { value: compiled.autoSize },
     };
@@ -332,6 +336,7 @@ export function DotField({
       (u.uPointer.value as THREE.Vector2).set(pointerPosition.x, pointerPosition.y);
     }
     u.uPointerStrength.value = pointerStrength ?? 0;
+    u.uGlobalOpacity.value = opacity;
   });
 
   // No JSX mesh — managed imperatively
