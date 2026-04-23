@@ -5,12 +5,14 @@ import type {
   DisplaceNode,
   OpacityNode,
   SizeNode,
+  SdfNode,
 } from '@bigpuddle/dot-engine-core';
 import { collectSnippets } from './snippets.js';
 import { SMIN_GLSL } from './smin.glsl.js';
 import { SIMPLEX3D_GLSL } from './noise3d.glsl.js';
 import { CURL3D_GLSL } from './curl3d.glsl.js';
 import { BASE_FRAGMENT } from '../shaders/base-fragment.js';
+import type { ExtraUniform } from './compiler.js';
 
 export interface CompiledMorphField {
   vertexShader: string;
@@ -20,6 +22,28 @@ export interface CompiledMorphField {
   totalDots: number;
   fromEdgeSoftness: number;
   toEdgeSoftness: number;
+  /**
+   * Texture uniforms required by the compiled shader — union of both
+   * `from` and `to` SDF trees. Keyed by textureId. The MorphField
+   * component uses this to declare uniform slots and bind textures.
+   */
+  extraUniforms: Record<string, ExtraUniform>;
+}
+
+function collectTextureUniforms(node: SdfNode, out: Record<string, ExtraUniform>): void {
+  if (node.type === 'textureSdf') {
+    const tid = node.textureId;
+    if (!out[tid]) {
+      out[tid] = {
+        type: 'sampler2D',
+        declaration: `uniform sampler2D uLogoSDF_${tid};\nuniform float uLogoDepth_${tid};\nuniform float uLogoAspect_${tid};`,
+      };
+    }
+    return;
+  }
+  if ('a' in node) collectTextureUniforms((node as { a: SdfNode }).a, out);
+  if ('b' in node) collectTextureUniforms((node as { b: SdfNode }).b, out);
+  if ('child' in node) collectTextureUniforms((node as { child: SdfNode }).child, out);
 }
 
 function f(n: number): string {
@@ -109,6 +133,17 @@ export function compileMorphField(from: FieldRoot, to: FieldRoot): CompiledMorph
   const needsSmin = allSdfCode.includes('smin(');
   const sdfFunctions = needsSmin ? `${SMIN_GLSL}\n${allSdfCode}` : allSdfCode;
 
+  // Collect sampler2D / depth / aspect uniforms referenced by any
+  // textureSdf node in either tree. Renamed "to" snippets still use
+  // the original texture IDs (the rename prefix is a function-name
+  // concern), so we union the uniforms from both raw trees.
+  const extraUniforms: Record<string, ExtraUniform> = {};
+  collectTextureUniforms(fromShape.sdf, extraUniforms);
+  collectTextureUniforms(toShape.sdf, extraUniforms);
+  const extraUniformsCode = Object.values(extraUniforms)
+    .map((u) => u.declaration)
+    .join('\n');
+
   // Displacement from "to" field only
   const displaceNodes = to.children.filter((c): c is DisplaceNode => c.type === 'displace');
   const needsCurl = displaceNodes.some(d => d.noise.type === 'flowField3D');
@@ -153,6 +188,8 @@ uniform float uPointerStrength;
 uniform float uMorphProgress;
 uniform float uFromEdgeSoftness;
 uniform float uToEdgeSoftness;
+
+${extraUniformsCode}
 
 ${noiseFunctions}
 
@@ -228,5 +265,6 @@ void main() {
     totalDots,
     fromEdgeSoftness,
     toEdgeSoftness,
+    extraUniforms,
   };
 }

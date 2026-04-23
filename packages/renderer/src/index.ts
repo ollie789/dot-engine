@@ -4,7 +4,7 @@ export { compileMorphField, type CompiledMorphField } from './compiler/morph-com
 export { DotField, type DotFieldProps } from './components/DotField.js';
 export { DotFieldCanvas, type DotFieldCanvasProps } from './components/DotFieldCanvas.js';
 export { DotFieldErrorBoundary, type DotFieldErrorBoundaryProps } from './components/DotFieldErrorBoundary.js';
-export { MorphField, type MorphFieldProps } from './components/MorphField.js';
+export { MorphField, type MorphFieldProps, type MorphFieldTexture } from './components/MorphField.js';
 export { VideoField, type VideoFieldProps } from './components/VideoField.js';
 export { computeLodTier, clampToCanvas, type LodTier, type LodOverride, type LodQuality } from './components/LodBenchmark.js';
 export { usePointerInfluence, type PointerInfluenceOptions, type PointerInfluence } from './hooks/usePointerInfluence.js';

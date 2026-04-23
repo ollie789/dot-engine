@@ -4,6 +4,12 @@ import * as THREE from 'three';
 import type { FieldRoot } from '@bigpuddle/dot-engine-core';
 import { compileMorphField } from '../compiler/morph-compiler.js';
 
+export interface MorphFieldTexture {
+  texture: THREE.DataTexture;
+  depth: number;
+  aspectRatio: number;
+}
+
 export interface MorphFieldProps {
   from: FieldRoot;
   to: FieldRoot;
@@ -12,6 +18,14 @@ export interface MorphFieldProps {
   colorTo?: { primary: string; accent: string };
   /** 0..1 multiplier applied to every dot's alpha. Default 1. */
   opacity?: number;
+  /**
+   * SDF textures referenced by either field. Keys are textureIds
+   * (`brand.logo.textureId`). When the compiled shader references a
+   * `textureSdf` node, the matching entry must be present here or
+   * the corresponding uniform slot stays null and the shape renders
+   * as empty space.
+   */
+  textures?: Record<string, MorphFieldTexture>;
 }
 
 function hexToVec3(hex: string): THREE.Vector3 {
@@ -26,28 +40,42 @@ export function MorphField({
   colorFrom = { primary: '#4a9eff', accent: '#ff6b4a' },
   colorTo = { primary: '#4a9eff', accent: '#ff6b4a' },
   opacity = 1,
+  textures,
 }: MorphFieldProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null!);
 
   const compiled = useMemo(() => compileMorphField(from, to), [from, to]);
 
   const material = useMemo(() => {
+    const uniforms: Record<string, { value: unknown }> = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector3(...compiled.resolution) },
+      uBounds: { value: new THREE.Vector3(...compiled.bounds) },
+      uColorPrimary: { value: hexToVec3(colorFrom.primary) },
+      uColorAccent: { value: hexToVec3(colorFrom.accent) },
+      uPointer: { value: new THREE.Vector2(0, 0) },
+      uPointerStrength: { value: 0 },
+      uGlobalOpacity: { value: 1 },
+      uMorphProgress: { value: 0 },
+      uFromEdgeSoftness: { value: compiled.fromEdgeSoftness },
+      uToEdgeSoftness: { value: compiled.toEdgeSoftness },
+    };
+
+    // Declare uniform slots for every SDF texture referenced by either
+    // field. The slots start null; the textures useEffect below binds
+    // them once `textures` is available. If a field references a
+    // textureSdf with no matching entry, its sampler stays null and
+    // that node renders as empty space (no crash).
+    for (const tid of Object.keys(compiled.extraUniforms)) {
+      uniforms[`uLogoSDF_${tid}`] = { value: null };
+      uniforms[`uLogoDepth_${tid}`] = { value: 0 };
+      uniforms[`uLogoAspect_${tid}`] = { value: 1 };
+    }
+
     return new THREE.ShaderMaterial({
       vertexShader: compiled.vertexShader,
       fragmentShader: compiled.fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uResolution: { value: new THREE.Vector3(...compiled.resolution) },
-        uBounds: { value: new THREE.Vector3(...compiled.bounds) },
-        uColorPrimary: { value: hexToVec3(colorFrom.primary) },
-        uColorAccent: { value: hexToVec3(colorFrom.accent) },
-        uPointer: { value: new THREE.Vector2(0, 0) },
-        uPointerStrength: { value: 0 },
-        uGlobalOpacity: { value: 1 },
-        uMorphProgress: { value: 0 },
-        uFromEdgeSoftness: { value: compiled.fromEdgeSoftness },
-        uToEdgeSoftness: { value: compiled.toEdgeSoftness },
-      },
+      uniforms,
       transparent: true,
       depthWrite: true,
       depthTest: true,
@@ -58,6 +86,23 @@ export function MorphField({
 
   useEffect(() => { return () => { material.dispose(); }; }, [material]);
   useEffect(() => { return () => { geometry.dispose(); }; }, [geometry]);
+
+  // Bind texture uniforms whenever the textures map or compiled shader
+  // changes. Safe to run at every render since the uniform values are
+  // mutated in-place and equal references short-circuit in Three.js.
+  useEffect(() => {
+    if (!textures) return;
+    for (const tid of Object.keys(compiled.extraUniforms)) {
+      const entry = textures[tid];
+      if (!entry) continue;
+      const slot = material.uniforms[`uLogoSDF_${tid}`];
+      const depthSlot = material.uniforms[`uLogoDepth_${tid}`];
+      const aspectSlot = material.uniforms[`uLogoAspect_${tid}`];
+      if (slot) slot.value = entry.texture;
+      if (depthSlot) depthSlot.value = entry.depth;
+      if (aspectSlot) aspectSlot.value = entry.aspectRatio;
+    }
+  }, [textures, compiled.extraUniforms, material]);
 
   // Cached color refs to avoid per-frame allocations (same pattern as DotField)
   const fromPrimRef = useRef(colorFrom.primary);
